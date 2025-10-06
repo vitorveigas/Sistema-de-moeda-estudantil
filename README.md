@@ -12,4 +12,4 @@ Sistema de moeda estudantil
 
 ---
 
-# Historias de usuário 📖👨
+# Historias de usuário 📖
