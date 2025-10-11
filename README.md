@@ -99,4 +99,4 @@ O sistema segue o padrão **MVC (Model-View-Controller)**, complementado com as 
 
 Este projeto está licenciado sob a [MIT License](./LICENSE).
 Você pode usar, modificar e distribuir este código, desde que os **devidos créditos sejam dados**, com link para o [original repository](https://github.com/vitorveigas/Sistema-de-moeda-estudantil/tree/main). 
-Este projeto foi desenvolvido por [Caue Afonso](https://github.com/caueafonsomoraes), [Thomás Ramos](https://github.com/Thomasramos02), [Vinícius Gomes] (https://github.com/viniciusgomesrod) e [Vitor Veiga] (https://github.com/vitorveigas).
+Este projeto foi desenvolvido por [Caue Afonso](https://github.com/caueafonsomoraes), [Thomás Ramos](https://github.com/Thomasramos02), [Vinícius Gomes](https://github.com/viniciusgomesrod) e [Vitor Veiga](https://github.com/vitorveigas).
