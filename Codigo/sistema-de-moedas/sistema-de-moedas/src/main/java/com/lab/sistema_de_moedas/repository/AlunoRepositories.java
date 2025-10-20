@@ -12,11 +12,14 @@ public interface AlunoRepositories extends JpaRepository<Aluno, Long> {
     
     Optional<Aluno> findById(Long id);
     Optional<Aluno> findByEmail(String email);
+    Optional<Aluno> findByCpf(String cpf);
 
     @Transactional
     void deleteById(Long id);
 
-
     @Transactional
     void deleteByEmail(String email);
+
+    @Transactional
+    void deleteByCpf(String cpf);
 }

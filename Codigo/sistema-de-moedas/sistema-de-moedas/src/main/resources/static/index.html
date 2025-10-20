@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Moedas Estudantis</title>
+    <script>
+        // Redirect to login page
+        window.location.href = 'login.html';
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 0.75rem;
+            text-align: center;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px 5px 0 0;
+            margin-right: 2px;
+        }
+        
+        .tab.active {
+            background: white;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+        
+        .crud-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #e1e5e9;
+        }
+        
+        .crud-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .crud-buttons button {
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; margin-bottom: 2rem; color: #333;">Sistema de Moedas Estudantis</h1>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('login')">Login</button>
+            <button class="tab" onclick="showTab('register')">Cadastro</button>
+        </div>
+        
+        <!-- Login Tab -->
+        <div id="login" class="tab-content active">
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email:</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Senha:</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit">Entrar</button>
+            </form>
+        </div>
+        
+        <!-- Register Tab -->
+        <div id="register" class="tab-content">
+            <div class="form-group">
+                <label>Tipo de Usuário:</label>
+                <select id="userType" onchange="toggleUserFields()">
+                    <option value="aluno">Aluno</option>
+                    <option value="empresa">Empresa</option>
+                </select>
+            </div>
+            
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="regName">Nome:</label>
+                    <input type="text" id="regName" required>
+                </div>
+                <div class="form-group">
+                    <label for="regEmail">Email:</label>
+                    <input type="email" id="regEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Senha:</label>
+                    <input type="password" id="regPassword" required>
+                </div>
+                
+                <!-- Aluno fields -->
+                <div id="alunoFields">
+                    <div class="form-group">
+                        <label for="matricula">Matrícula:</label>
+                        <input type="text" id="matricula">
+                    </div>
+                    <div class="form-group">
+                        <label for="curso">Curso:</label>
+                        <input type="text" id="curso">
+                    </div>
+                    <div class="form-group">
+                        <label for="cpf">CPF:</label>
+                        <input type="text" id="cpf">
+                    </div>
+                    <div class="form-group">
+                        <label for="rg">RG:</label>
+                        <input type="text" id="rg">
+                    </div>
+                    <div class="form-group">
+                        <label for="instituicao">Instituição de Ensino:</label>
+                        <input type="text" id="instituicao">
+                    </div>
+                    <div class="form-group">
+                        <label for="endereco">Endereço:</label>
+                        <textarea id="endereco"></textarea>
+                    </div>
+                </div>
+                
+                <!-- Empresa fields -->
+                <div id="empresaFields" class="hidden">
+                    <div class="form-group">
+                        <label for="cnpj">CNPJ:</label>
+                        <input type="text" id="cnpj">
+                    </div>
+                    <div class="form-group">
+                        <label for="razaoSocial">Razão Social:</label>
+                        <input type="text" id="razaoSocial">
+                    </div>
+                    <div class="form-group">
+                        <label for="empresaEndereco">Endereço:</label>
+                        <textarea id="empresaEndereco"></textarea>
+                    </div>
+                </div>
+                
+                <button type="submit">Cadastrar</button>
+            </form>
+        </div>
+        
+        <!-- CRUD Section (hidden initially) -->
+        <div id="crudSection" class="crud-section hidden">
+            <h2>Gerenciar Dados</h2>
+            <div class="crud-buttons">
+                <button onclick="showCrudForm('create')">Criar</button>
+                <button onclick="showCrudForm('read')">Buscar</button>
+                <button onclick="showCrudForm('update')">Atualizar</button>
+                <button onclick="showCrudForm('delete')">Deletar</button>
+            </div>
+            
+            <div id="crudForm" class="hidden">
+                <!-- CRUD forms will be dynamically generated here -->
+            </div>
+        </div>
+        
+        <!-- Messages -->
+        <div id="message"></div>
+    </div>
+
+    <script>
+        let currentToken = null;
+        let currentUserType = null;
+        const API_BASE = 'http://localhost:8080';
+
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function toggleUserFields() {
+            const userType = document.getElementById('userType').value;
+            const alunoFields = document.getElementById('alunoFields');
+            const empresaFields = document.getElementById('empresaFields');
+            
+            if (userType === 'aluno') {
+                alunoFields.classList.remove('hidden');
+                empresaFields.classList.add('hidden');
+            } else {
+                alunoFields.classList.add('hidden');
+                empresaFields.classList.remove('hidden');
+            }
+        }
+
+        function showMessage(message, type = 'success') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = `<div class="${type}">${message}</div>`;
+            setTimeout(() => {
+                messageDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        function setAuthHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': currentToken ? `Bearer ${currentToken}` : ''
+            };
+        }
+
+        // Login form
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentToken = data.token;
+                    currentUserType = data.userType;
+                    showMessage('Login realizado com sucesso!');
+                    document.getElementById('crudSection').classList.remove('hidden');
+                } else {
+                    showMessage(data.error || 'Erro no login', 'error');
+                }
+            } catch (error) {
+                showMessage('Erro de conexão', 'error');
+            }
+        });
+
+        // Register form
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const userType = document.getElementById('userType').value;
+            const formData = {
+                nome: document.getElementById('regName').value,
+                email: document.getElementById('regEmail').value,
+                senha: document.getElementById('regPassword').value
+            };
+            
+            if (userType === 'aluno') {
+                formData.matricula = document.getElementById('matricula').value;
+                formData.curso = document.getElementById('curso').value;
+                formData.cpf = document.getElementById('cpf').value;
+                formData.rg = document.getElementById('rg').value;
+                formData.instituicaoEnsino = document.getElementById('instituicao').value;
+                formData.endereco = document.getElementById('endereco').value;
+            } else {
+                formData.cnpj = document.getElementById('cnpj').value;
+                formData.razaoSocial = document.getElementById('razaoSocial').value;
+                formData.endereco = document.getElementById('empresaEndereco').value;
+            }
+            
+            try {
+                const endpoint = userType === 'aluno' ? '/auth/register/aluno' : '/auth/register/empresa';
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentToken = data.token;
+                    currentUserType = data.userType;
+                    showMessage('Cadastro realizado com sucesso!');
+                    document.getElementById('crudSection').classList.remove('hidden');
+                } else {
+                    showMessage(data.error || 'Erro no cadastro', 'error');
+                }
+            } catch (error) {
+                showMessage('Erro de conexão', 'error');
+            }
+        });
+
+        function showCrudForm(action) {
+            const crudForm = document.getElementById('crudForm');
+            crudForm.classList.remove('hidden');
+            
+            let formHTML = '';
+            
+            if (action === 'create') {
+                formHTML = `
+                    <h3>Criar ${currentUserType === 'ALUNO' ? 'Aluno' : 'Empresa'}</h3>
+                    <form id="createForm">
+                        <div class="form-group">
+                            <label>Nome:</label>
+                            <input type="text" id="createName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email:</label>
+                            <input type="email" id="createEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Senha:</label>
+                            <input type="password" id="createPassword" required>
+                        </div>
+                        ${currentUserType === 'ALUNO' ? `
+                            <div class="form-group">
+                                <label>Matrícula:</label>
+                                <input type="text" id="createMatricula">
+                            </div>
+                            <div class="form-group">
+                                <label>Curso:</label>
+                                <input type="text" id="createCurso">
+                            </div>
+                        ` : `
+                            <div class="form-group">
+                                <label>CNPJ:</label>
+                                <input type="text" id="createCnpj">
+                            </div>
+                            <div class="form-group">
+                                <label>Razão Social:</label>
+                                <input type="text" id="createRazaoSocial">
+                            </div>
+                        `}
+                        <div class="form-group">
+                            <label>Endereço:</label>
+                            <textarea id="createEndereco"></textarea>
+                        </div>
+                        <button type="submit">Criar</button>
+                    </form>
+                `;
+            } else if (action === 'read') {
+                formHTML = `
+                    <h3>Buscar ${currentUserType === 'ALUNO' ? 'Aluno' : 'Empresa'}</h3>
+                    <form id="readForm">
+                        <div class="form-group">
+                            <label>ID:</label>
+                            <input type="number" id="readId" required>
+                        </div>
+                        <button type="submit">Buscar</button>
+                    </form>
+                    <div id="readResult"></div>
+                `;
+            } else if (action === 'update') {
+                formHTML = `
+                    <h3>Atualizar ${currentUserType === 'ALUNO' ? 'Aluno' : 'Empresa'}</h3>
+                    <form id="updateForm">
+                        <div class="form-group">
+                            <label>ID:</label>
+                            <input type="number" id="updateId" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nome:</label>
+                            <input type="text" id="updateName">
+                        </div>
+                        <div class="form-group">
+                            <label>Email:</label>
+                            <input type="email" id="updateEmail">
+                        </div>
+                        <div class="form-group">
+                            <label>Senha:</label>
+                            <input type="password" id="updatePassword">
+                        </div>
+                        ${currentUserType === 'ALUNO' ? `
+                            <div class="form-group">
+                                <label>Matrícula:</label>
+                                <input type="text" id="updateMatricula">
+                            </div>
+                            <div class="form-group">
+                                <label>Curso:</label>
+                                <input type="text" id="updateCurso">
+                            </div>
+                        ` : `
+                            <div class="form-group">
+                                <label>CNPJ:</label>
+                                <input type="text" id="updateCnpj">
+                            </div>
+                            <div class="form-group">
+                                <label>Razão Social:</label>
+                                <input type="text" id="updateRazaoSocial">
+                            </div>
+                        `}
+                        <div class="form-group">
+                            <label>Endereço:</label>
+                            <textarea id="updateEndereco"></textarea>
+                        </div>
+                        <button type="submit">Atualizar</button>
+                    </form>
+                `;
+            } else if (action === 'delete') {
+                formHTML = `
+                    <h3>Deletar ${currentUserType === 'ALUNO' ? 'Aluno' : 'Empresa'}</h3>
+                    <form id="deleteForm">
+                        <div class="form-group">
+                            <label>ID:</label>
+                            <input type="number" id="deleteId" required>
+                        </div>
+                        <button type="submit">Deletar</button>
+                    </form>
+                `;
+            }
+            
+            crudForm.innerHTML = formHTML;
+            
+            // Add event listeners for the new forms
+            setTimeout(() => {
+                if (action === 'create') {
+                    document.getElementById('createForm').addEventListener('submit', handleCreate);
+                } else if (action === 'read') {
+                    document.getElementById('readForm').addEventListener('submit', handleRead);
+                } else if (action === 'update') {
+                    document.getElementById('updateForm').addEventListener('submit', handleUpdate);
+                } else if (action === 'delete') {
+                    document.getElementById('deleteForm').addEventListener('submit', handleDelete);
+                }
+            }, 100);
+        }
+
+        async function handleCreate(e) {
+            e.preventDefault();
+            
+            const formData = {
+                nome: document.getElementById('createName').value,
+                email: document.getElementById('createEmail').value,
+                senha: document.getElementById('createPassword').value,
+                endereco: document.getElementById('createEndereco').value
+            };
+            
+            if (currentUserType === 'ALUNO') {
+                formData.matricula = document.getElementById('createMatricula').value;
+                formData.curso = document.getElementById('createCurso').value;
+            } else {
+                formData.cnpj = document.getElementById('createCnpj').value;
+                formData.razaoSocial = document.getElementById('createRazaoSocial').value;
+            }
+            
+            try {
+                const endpoint = currentUserType === 'ALUNO' ? '/alunos/criarAluno' : '/empresas/criar';
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    method: 'POST',
+                    headers: setAuthHeaders(),
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    showMessage('Criado com sucesso!');
+                } else {
+                    const data = await response.json();
+                    showMessage(data.error || 'Erro ao criar', 'error');
+                }
+            } catch (error) {
+                showMessage('Erro de conexão', 'error');
+            }
+        }
+
+        async function handleRead(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('readId').value;
+            
+            try {
+                const endpoint = currentUserType === 'ALUNO' ? '/alunos/buscarAluno' : '/empresas/buscar';
+                const response = await fetch(`${API_BASE}${endpoint}?id=${id}`, {
+                    method: 'GET',
+                    headers: setAuthHeaders()
+                });
+                
+                const data = await response.json();
+                const resultDiv = document.getElementById('readResult');
+                
+                if (response.ok) {
+                    if (currentUserType === 'ALUNO') {
+                        resultDiv.innerHTML = `
+                            <div style="background: #f8f9fa; padding: 1rem; border-radius: 5px; margin-top: 1rem;">
+                                <h4 style="color: #333; margin-bottom: 1rem;">📚 Dados do Aluno</h4>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                    <div><strong>ID:</strong> ${data.id || 'N/A'}</div>
+                                    <div><strong>Nome:</strong> ${data.nome || 'N/A'}</div>
+                                    <div><strong>Email:</strong> ${data.email || 'N/A'}</div>
+                                    <div><strong>Matrícula:</strong> ${data.matricula || 'N/A'}</div>
+                                    <div><strong>Curso:</strong> ${data.curso || 'N/A'}</div>
+                                    <div><strong>CPF:</strong> ${data.cpf || 'N/A'}</div>
+                                    <div><strong>RG:</strong> ${data.rg || 'N/A'}</div>
+                                    <div><strong>Instituição:</strong> ${data.instituicaoEnsino || 'N/A'}</div>
+                                </div>
+                                <div style="margin-top: 0.5rem;">
+                                    <strong>Endereço:</strong> ${data.endereco || 'N/A'}
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div style="background: #f8f9fa; padding: 1rem; border-radius: 5px; margin-top: 1rem;">
+                                <h4 style="color: #333; margin-bottom: 1rem;">🏢 Dados da Empresa</h4>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                    <div><strong>ID:</strong> ${data.id || 'N/A'}</div>
+                                    <div><strong>Nome:</strong> ${data.nome || 'N/A'}</div>
+                                    <div><strong>Email:</strong> ${data.email || 'N/A'}</div>
+                                    <div><strong>CNPJ:</strong> ${data.cnpj || 'N/A'}</div>
+                                    <div><strong>Razão Social:</strong> ${data.razaoSocial || 'N/A'}</div>
+                                </div>
+                                <div style="margin-top: 0.5rem;">
+                                    <strong>Endereço:</strong> ${data.endereco || 'N/A'}
+                                </div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    resultDiv.innerHTML = `<div class="error">${data.error || 'Erro ao buscar'}</div>`;
+                }
+            } catch (error) {
+                showMessage('Erro de conexão', 'error');
+            }
+        }
+
+        async function handleUpdate(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('updateId').value;
+            const formData = {};
+            
+            const name = document.getElementById('updateName').value;
+            const email = document.getElementById('updateEmail').value;
+            const password = document.getElementById('updatePassword').value;
+            const endereco = document.getElementById('updateEndereco').value;
+            
+            if (name) formData.nome = name;
+            if (email) formData.email = email;
+            if (password) formData.senha = password;
+            if (endereco) formData.endereco = endereco;
+            
+            if (currentUserType === 'ALUNO') {
+                const matricula = document.getElementById('updateMatricula').value;
+                const curso = document.getElementById('updateCurso').value;
+                if (matricula) formData.matricula = matricula;
+                if (curso) formData.curso = curso;
+            } else {
+                const cnpj = document.getElementById('updateCnpj').value;
+                const razaoSocial = document.getElementById('updateRazaoSocial').value;
+                if (cnpj) formData.cnpj = cnpj;
+                if (razaoSocial) formData.razaoSocial = razaoSocial;
+            }
+            
+            try {
+                const endpoint = currentUserType === 'ALUNO' ? '/alunos/atualizarAluno' : '/empresas/atualizar';
+                const response = await fetch(`${API_BASE}${endpoint}?id=${id}`, {
+                    method: 'PUT',
+                    headers: setAuthHeaders(),
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    showMessage('Atualizado com sucesso!');
+                } else {
+                    const data = await response.json();
+                    showMessage(data.error || 'Erro ao atualizar', 'error');
+                }
+            } catch (error) {
+                showMessage('Erro de conexão', 'error');
+            }
+        }
+
+        async function handleDelete(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('deleteId').value;
+            
+            try {
+                const endpoint = currentUserType === 'ALUNO' ? '/alunos/deletarAluno' : '/empresas/deletar';
+                const response = await fetch(`${API_BASE}${endpoint}?id=${id}`, {
+                    method: 'DELETE',
+                    headers: setAuthHeaders()
+                });
+                
+                if (response.ok) {
+                    showMessage('Deletado com sucesso!');
+                } else {
+                    const data = await response.json();
+                    showMessage(data.error || 'Erro ao deletar', 'error');
+                }
+            } catch (error) {
+                showMessage('Erro de conexão', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -28,6 +28,11 @@ public class AlunoServices {
         .orElseThrow(()-> new RuntimeException("Aluno não encontrado"));
     }
 
+    public Aluno buscarAlunoPorCpf(String cpf){
+        return alunoRepositories.findByCpf(cpf)
+        .orElseThrow(()-> new RuntimeException("Aluno não encontrado"));
+    }
+
     
             public void atualizarAluno(Long id, Aluno aluno){
                Aluno alunoAtual = buscarAlunoPorId(id);
@@ -47,11 +52,25 @@ public class AlunoServices {
                 alunoRepositories.saveAndFlush(alunoAtualizado);
             }
 
-            
-        
-
-
-        
+    public void atualizarAlunoPorCpf(String cpf, Aluno aluno){
+        Aluno alunoAtual = buscarAlunoPorCpf(cpf);
+        Aluno alunoAtualizado = Aluno.builder()
+            .id(alunoAtual.getId())
+            .nome(aluno.getNome() != null ? aluno.getNome() : alunoAtual.getNome())
+            .email(aluno.getEmail() != null ? aluno.getEmail() : alunoAtual.getEmail())
+            .senha(aluno.getSenha() != null ? aluno.getSenha() : alunoAtual.getSenha())
+            .matricula(aluno.getMatricula() != null ? aluno.getMatricula() : alunoAtual.getMatricula())
+            .curso(aluno.getCurso() != null ? aluno.getCurso() : alunoAtual.getCurso())
+            .cpf(aluno.getCpf() != null ? aluno.getCpf() : alunoAtual.getCpf())
+            .rg(aluno.getRg() != null ? aluno.getRg() : alunoAtual.getRg())
+            .instituicaoEnsino(aluno.getInstituicaoEnsino() != null ? aluno.getInstituicaoEnsino() : alunoAtual.getInstituicaoEnsino())
+            .endereco(aluno.getEndereco() != null ? aluno.getEndereco() : alunoAtual.getEndereco())
+            .build();
+             
+        alunoRepositories.saveAndFlush(alunoAtualizado);
     }
-    
 
+    public void deletarAlunoPorCpf(String cpf){
+        alunoRepositories.deleteByCpf(cpf);
+    }
+}

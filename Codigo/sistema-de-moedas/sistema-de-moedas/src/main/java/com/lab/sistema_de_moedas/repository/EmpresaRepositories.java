@@ -9,15 +9,16 @@ import com.lab.sistema_de_moedas.model.Empresa;
 import jakarta.transaction.Transactional;
 
 public interface EmpresaRepositories extends JpaRepository<Empresa, Long> {
-
     Optional<Empresa> findById(Long id);
+    Optional<Empresa> findByEmail(String email);
     Optional<Empresa> findByCnpj(String cnpj);
 
     @Transactional
     void deleteById(Long id);
 
     @Transactional
-    void deleteByCnpj(String cnpj);
+    void deleteByEmail(String email);
 
-    
+    @Transactional
+    void deleteByCnpj(String cnpj);
 }

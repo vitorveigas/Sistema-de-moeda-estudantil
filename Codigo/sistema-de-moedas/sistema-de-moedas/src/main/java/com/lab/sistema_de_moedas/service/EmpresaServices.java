@@ -12,40 +12,40 @@ public class EmpresaServices {
     @Autowired
     private EmpresaRepositories empresaRepositories;
 
-    public void salvarEmpresa(Empresa empresa){
+    public void salvar(Empresa empresa){
         empresaRepositories.saveAndFlush(empresa);
     }
 
-    public void deletarEmpresaPorId(Long Id){
-        empresaRepositories.deleteById(Id);
-    }
-
-    public void deletarEmpresaPorCnpj(String cnpj){
-        empresaRepositories.deleteByCnpj(cnpj);
-    }
-
-    public Empresa buscarEmpresaPorId(Long id){
+    public Empresa buscarPorId(Long id){
         return empresaRepositories.findById(id)
         .orElseThrow(()-> new RuntimeException("Empresa não encontrada"));
     }
 
-    public void atualizarEmpresa(Long id, Empresa empresa){
-       Empresa empresaAtual = buscarEmpresaPorId(id);
-       Empresa empresaAtualizada = Empresa.builder()
-        .id(empresaAtual.getId())
-        .nome(empresa.getNome() != null ? empresa.getNome() : empresaAtual.getNome())
-        .email(empresa.getEmail() != null ? empresa.getEmail() : empresaAtual.getEmail())
-        .senha(empresa.getSenha() != null ? empresa.getSenha() : empresaAtual.getSenha())
-        .cnpj(empresa.getCnpj() != null ? empresa.getCnpj() : empresaAtual.getCnpj())
-        .endereco(empresa.getEndereco() != null ? empresa.getEndereco() : empresaAtual.getEndereco())
-        .build();
-         
-        empresaRepositories.saveAndFlush(empresaAtualizada);
-    }
-
-    public Empresa buscarEmpresaPorCnpj(String cnpj){
+    public Empresa buscarPorCnpj(String cnpj){
         return empresaRepositories.findByCnpj(cnpj)
         .orElseThrow(()-> new RuntimeException("Empresa não encontrada"));
     }
-    
+
+    public void deletarPorId(Long id){
+        empresaRepositories.deleteById(id);
+    }
+
+    public void deletarPorCnpj(String cnpj){
+        empresaRepositories.deleteByCnpj(cnpj);
+    }
+
+    public void atualizarPorCnpj(String cnpj, Empresa empresa){
+        Empresa empresaAtual = buscarPorCnpj(cnpj);
+        Empresa empresaAtualizada = Empresa.builder()
+            .id(empresaAtual.getId())
+            .nome(empresa.getNome() != null ? empresa.getNome() : empresaAtual.getNome())
+            .email(empresa.getEmail() != null ? empresa.getEmail() : empresaAtual.getEmail())
+            .senha(empresa.getSenha() != null ? empresa.getSenha() : empresaAtual.getSenha())
+            .cnpj(empresa.getCnpj() != null ? empresa.getCnpj() : empresaAtual.getCnpj())
+            .razaoSocial(empresa.getRazaoSocial() != null ? empresa.getRazaoSocial() : empresaAtual.getRazaoSocial())
+            .endereco(empresa.getEndereco() != null ? empresa.getEndereco() : empresaAtual.getEndereco())
+            .build();
+             
+        empresaRepositories.saveAndFlush(empresaAtualizada);
+    }
 }
