@@ -5,13 +5,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.lab.sistema_de_moedas.model.Aluno;
 import com.lab.sistema_de_moedas.service.AlunoServices;
+import com.lab.sistema_de_moedas.service.JwtService;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,6 +28,9 @@ public class AlunoController {
     
     private final AlunoServices alunoServices;
 
+    @Autowired
+    private JwtService jwtService;
+
     @PostMapping("criarAluno")
     public ResponseEntity<Aluno> criarAluno(@RequestBody Aluno aluno){
             
@@ -32,6 +38,22 @@ public class AlunoController {
 
         return ResponseEntity.ok(aluno);
     }
+
+    @GetMapping("/perfil")
+    public ResponseEntity<Aluno> perfil(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            String email = jwtService.extractUsername(token);
+            Aluno aluno = alunoServices.buscarAlunoPorEmail(email);
+            return ResponseEntity.ok(aluno);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(401).build(); // Não autorizado
+        }
+    }
+
+
+
 
     @GetMapping("buscarAluno")
     public ResponseEntity<Aluno> buscarAluno(@RequestParam Long id){

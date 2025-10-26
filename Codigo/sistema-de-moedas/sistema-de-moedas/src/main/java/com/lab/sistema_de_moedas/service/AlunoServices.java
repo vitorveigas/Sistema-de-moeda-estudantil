@@ -73,4 +73,9 @@ public class AlunoServices {
     public void deletarAlunoPorCpf(String cpf){
         alunoRepositories.deleteByCpf(cpf);
     }
+    public Aluno buscarAlunoPorEmail(String email) {
+        return alunoRepositories.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
+    }
+    
 }
