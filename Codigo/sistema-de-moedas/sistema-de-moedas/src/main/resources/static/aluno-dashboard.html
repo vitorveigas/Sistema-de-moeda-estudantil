@@ -163,6 +163,10 @@
                 <input type="password" id="password" placeholder="Nova senha">
             </div>
             <button type="submit" class="btn">Atualizar</button>
+            <button type="button" class="btn" id="deleteAccountBtn" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%); margin-top: 1rem;">
+                <i class="fas fa-trash"></i> Excluir Conta
+            </button>
+            <div id="deleteMessage" style="margin-top: 1rem;"></div>
         </form>
         <div id="accountMessage"></div>
     </div>
@@ -304,6 +308,41 @@ document.getElementById('accountForm').addEventListener('submit', async e => {
             showMessage(data.error || 'Erro ao resgatar', 'error');
         }
     });
+    // Excluir conta do aluno
+document.getElementById('deleteAccountBtn').addEventListener('click', async () => {
+    const id = document.getElementById('matricula').value;
+
+    if (!id) {
+        alert('ID não encontrado. Não foi possível excluir a conta.');
+        return;
+    }
+
+    if (!confirm('Tem certeza que deseja excluir permanentemente sua conta? Esta ação não poderá ser desfeita.')) {
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/alunos/deletarAluno?id=${id}`, {
+            method: 'DELETE',
+            headers: setAuthHeaders()
+        });
+
+        const msgDiv = document.getElementById('deleteMessage');
+        if (res.ok) {
+            msgDiv.textContent = 'Conta excluída com sucesso!';
+            msgDiv.style.color = 'green';
+            localStorage.removeItem('token');
+            setTimeout(() => window.location.href = 'login.html', 2000);
+        } else {
+            msgDiv.textContent = 'Erro ao excluir conta.';
+            msgDiv.style.color = 'red';
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao excluir conta. Verifique sua conexão.');
+    }
+});
+
 
     // Inicialização
     carregarSaldo();
