@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.lab.sistema_de_moedas.model.Aluno;
 
 import jakarta.transaction.Transactional;
+import java.util.List;
+
 
 public interface AlunoRepositories extends JpaRepository<Aluno, Long> {
     
@@ -22,4 +24,6 @@ public interface AlunoRepositories extends JpaRepository<Aluno, Long> {
 
     @Transactional
     void deleteByCpf(String cpf);
+
+    List<Aluno> findByMatricula(String matricula);
 }

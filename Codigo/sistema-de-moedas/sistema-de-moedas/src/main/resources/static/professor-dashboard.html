@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Aluno - Sistema de Moedas Estudantis</title>
+    <title>Dashboard Professor - Sistema de Moedas Estudantis</title>
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <style>
-        /* Estilos Globais */
+        /* Estilos Globais (Tema SB Admin 2) */
         :root {
             --primary-blue: #4e73df;
             --secondary-gray: #858796;
@@ -20,6 +20,9 @@
             --border-color: #e3e6f0;
             --text-dark: #5a5c69;
             --text-light: #b7b9cc;
+            --success: #1cc88a;
+            --danger: #e74a3b;
+            --warning: #f6c23e;
         }
 
         body {
@@ -104,7 +107,7 @@
             margin-left: 1.5rem;
         }
         .logout-btn {
-            background: #e74a3b;
+            background: var(--danger);
             color: white;
             border: none;
             padding: 0.5rem 1rem;
@@ -152,17 +155,28 @@
             display: flex; align-items: center; gap: 0.5rem;
         }
 
-        /* Card de Resumo (Saldo) */
+        /* Card de Resumo (Stats) */
         .card-summary {
             border-left-width: 0.25rem;
         }
         .border-left-primary { border-left-color: var(--primary-blue) !important; }
+        .border-left-success { border-left-color: var(--success) !important; }
         .text-primary { color: var(--primary-blue) !important; }
+        .text-success { color: var(--success) !important; }
         .text-gray-300 { color: #dddfeb !important; }
         .text-gray-800 { color: #5a5c69 !important; }
         .text-xs { font-size: 0.7rem; }
 
-        /* Estilos do Formulário (para ficar parecido com Bootstrap) */
+        /* Estilos do Formulário */
+        .form-group {
+             margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
         .input-container {
             position: relative;
             margin-bottom: 1rem;
@@ -175,15 +189,15 @@
             color: #999;
             z-index: 3;
         }
-        input.form-control, select.form-select {
+        input.form-control, select.form-select, textarea.form-control {
             padding-left: 45px;
         }
-        input.form-control:focus, select.form-select:focus {
+        input.form-control:focus, select.form-select:focus, textarea.form-control:focus {
              border-color: var(--primary-blue);
              box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
         }
 
-        /* Botão */
+        /* Botões */
         .btn-primary {
             background-color: var(--primary-blue);
             border-color: var(--primary-blue);
@@ -192,19 +206,23 @@
             background-color: var(--dark-blue);
             border-color: var(--dark-blue);
         }
-        
+
         /* Histórico */
-        #historicoTransacoes .result-item {
+        #historicoEnvios .result-item {
              border: 1px solid var(--border-color);
              padding: 0.75rem;
              border-radius: 0.35rem;
              margin-bottom: 0.5rem;
              background: #fafafa;
         }
-        #historicoTransacoes .result-item strong {
+        #historicoEnvios .result-item strong {
             color: var(--primary-blue);
             display: block;
             margin-bottom: 0.25rem;
+        }
+        #historicoEnvios .result-item .aluno-info {
+            font-style: italic;
+            color: var(--text-dark);
         }
 
     </style>
@@ -215,14 +233,14 @@
 
     <ul class="navbar-nav sidebar">
         <a class="sidebar-brand" href="#">
-            <i class="fas fa-coins me-2"></i>
-            <span>Aluno</span>
+            <i class="fas fa-chalkboard-teacher me-2"></i>
+            <span>Professor</span>
         </a>
 
         <hr class="sidebar-divider my-0">
 
         <li class="nav-item active">
-            <a class="nav-link" onclick="showTab('saldo', this)">
+            <a class="nav-link" onclick="showTab('darMoedas', this)">
                 <i class="fas fa-fw fa-tachometer-alt"></i>
                 <span>Dashboard</span>
             </a>
@@ -233,14 +251,7 @@
         <li class="nav-item">
             <a class="nav-link" onclick="showTab('historico', this)">
                 <i class="fas fa-fw fa-history"></i>
-                <span>Histórico</span>
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" onclick="showTab('vantagens', this)">
-                <i class="fas fa-fw fa-gift"></i>
-                <span>Resgatar Vantagens</span>
+                <span>Histórico de Envios</span>
             </a>
         </li>
 
@@ -255,7 +266,7 @@
         <div id="content">
 
             <nav class="navbar navbar-expand navbar-light bg-white topbar static-top shadow">
-                <h1 class="h3 mb-0 text-gray-800">Dashboard do Aluno</h1>
+                <h1 class="h3 mb-0 text-gray-800">Dashboard do Professor</h1>
 
                 <ul class="navbar-nav ms-auto me-3">
                     <li class="nav-item">
@@ -264,8 +275,10 @@
                 </ul>
             </nav>
             <div class="container-fluid pt-4">
+                
+                <div id="messageContainer" class="mb-4"></div>
 
-                <div id="saldo" class="tab-content active">
+                <div id="darMoedas" class="tab-content active">
                     <div class="row">
                         <div class="col-xl-3 col-md-6 mb-4">
                             <div class="card card-summary border-left-primary shadow h-100 py-2">
@@ -273,8 +286,8 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Saldo de Moedas</div>
-                                            <div id="saldoMoedas" class="h5 mb-0 font-weight-bold text-gray-800">0 moedas</div>
+                                                Saldo Atual</div>
+                                            <div id="moedasDistribuidas" class="h5 mb-0 font-weight-bold text-gray-800">0 moedas</div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-coins fa-2x text-gray-300"></i>
@@ -290,11 +303,11 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                Vantagens Resgatadas</div>
+                                                Alunos Premiados (Total)</div>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800">0</div>
                                         </div>
                                         <div class="col-auto">
-                                            <i class="fas fa-gift fa-2x text-gray-300"></i>
+                                            <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -303,53 +316,53 @@
                     </div>
                     
                     <div class="row">
-                        <div class="col-lg-6 mb-4">
+                        <div class="col-lg-8">
                             <div class="card shadow mb-4">
                                 <div class="card-header py-3">
-                                    <h2 class="m-0">Bem-vindo!</h2>
+                                    <h2><i class="fas fa-plus-circle"></i> Distribuir Moedas para Aluno</h2>
                                 </div>
                                 <div class="card-body">
-                                    <p>Use suas moedas para resgatar vantagens exclusivas. Acompanhe seu saldo e histórico pelo menu ao lado.</p>
-                                    <p class="mb-0">Este é seu painel de controle de estudante.</p>
-                                    </div>
+                                        <form id="darMoedasForm">
+                                            <div class="form-group">
+                                                <label for="alunoId">ID do Aluno</label>
+                                                <div class="input-container">
+                                                    <i class="fas fa-id-card"></i>
+                                                    <input type="number" id="alunoId" class="form-control" placeholder="Digite o ID do aluno" min="1" required>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="quantidadeMoedas">Quantidade de Moedas</label>
+                                                <div class="input-container">
+                                                    <i class="fas fa-coins"></i>
+                                                    <input type="number" id="quantidadeMoedas" class="form-control" placeholder="0" min="1" required>
+                                                </div>
+                                            </div>
+                                             <div class="form-group">
+                                                <label for="motivoMoedas">Motivo / Descrição</label>
+                                                <div class="input-container">
+                                                    <i class="fas fa-comment-alt"></i>
+                                                    <input type="text" id="motivoMoedas" class="form-control" placeholder="Ex: Ótimo desempenho na prova" required>
+                                                </div>
+                                            </div>
+                                            <button type="submit" class="btn btn-success btn-lg w-100">
+                                                <i class="fas fa-paper-plane"></i> Enviar Moedas
+                                            </button>
+                                        </form>
+                                    <div id="darMoedasMessage" class="mt-3"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
-
                 </div>
 
                 <div id="historico" class="tab-content">
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
-                            <h2><i class="fas fa-history"></i> Histórico de Transações</h2>
+                            <h2><i class="fas fa-history"></i> Histórico de Envios</h2>
                         </div>
                         <div class="card-body">
-                            <div id="historicoTransacoes">
+                            <div id="historicoEnvios">
                                 </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="vantagens" class="tab-content">
-                    <div class="row">
-                        <div class="col-lg-8">
-                            <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h2><i class="fas fa-gift"></i> Resgatar Vantagens</h2>
-                                </div>
-                                <div class="card-body">
-                                    <form id="resgatarForm">
-                                        <div class="input-container">
-                                            <i class="fas fa-gift"></i>
-                                            <select id="vantagemSelect" class="form-select" required>
-                                                <option value="">Selecione uma vantagem</option>
-                                            </select>
-                                        </div>
-                                        <button type="submit" class="btn btn-primary btn-lg">Resgatar</button>
-                                    </form>
-                                    <div id="resgatarMessage" class="mt-3"></div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -364,13 +377,15 @@
                                 <div class="card-body">
                                     <form id="accountForm">
                                         <div class="row">
-                                            <div class="col-md-6">
+                                            <div class="col-md-6 form-group">
+                                                <label for="name">Nome</label>
                                                 <div class="input-container">
                                                     <i class="fas fa-user"></i>
                                                     <input type="text" id="name" class="form-control" placeholder="Nome" required>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="col-md-6 form-group">
+                                                <label for="email">Email</label>
                                                 <div class="input-container">
                                                     <i class="fas fa-envelope"></i>
                                                     <input type="email" id="email" class="form-control" placeholder="Email" required>
@@ -378,55 +393,59 @@
                                             </div>
                                         </div>
                                         <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="input-container">
-                                                    <i class="fas fa-id-card"></i>
-                                                    <input type="text" id="matricula" class="form-control" placeholder="Matrícula" required readonly>
-                                                </div>
-                                            </div>
-                                             <div class="col-md-6">
-                                                <div class="input-container">
-                                                    <i class="fas fa-book"></i>
-                                                    <input type="text" id="curso" class="form-control" placeholder="Curso" required>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-6">
+                                            <div class="col-md-6 form-group">
+                                                <label for="cpf">CPF (Não pode ser alterado)</label>
                                                 <div class="input-container">
                                                     <i class="fas fa-id-badge"></i>
                                                     <input type="text" id="cpf" class="form-control" placeholder="CPF" required readonly>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="col-md-6 form-group">
+                                                <label for="rg">RG (Não pode ser alterado)</label>
                                                 <div class="input-container">
                                                     <i class="fas fa-id-badge"></i>
                                                     <input type="text" id="rg" class="form-control" placeholder="RG" readonly>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="input-container">
-                                            <i class="fas fa-university"></i>
-                                            <input type="text" id="instituicao" class="form-control" placeholder="Instituição de Ensino">
+                                        <div class="form-group">
+                                            <label for="departamento">Departamento ou Matéria</label>
+                                            <div class="input-container">
+                                                <i class="fas fa-chalkboard"></i>
+                                                <input type="text" id="departamento" class="form-control" placeholder="Ex: Departamento de Matemática">
+                                            </div>
                                         </div>
-                                        <div class="input-container">
-                                            <i class="fas fa-map-marker-alt"></i>
-                                            <input type="text" id="endereco" class="form-control" placeholder="Endereço">
+                                        <div class="form-group">
+                                            <label for="instituicao">Instituição de Ensino</label>
+                                            <div class="input-container">
+                                                <i class="fas fa-university"></i>
+                                                <input type="text" id="instituicao" class="form-control" placeholder="Instituição de Ensino">
+                                            </div>
                                         </div>
-                                        <div class="input-container">
-                                            <i class="fas fa-lock"></i>
-                                            <input type="password" id="password" class="form-control" placeholder="Nova senha (deixe em branco para não alterar)">
+                                        <div class="form-group">
+                                            <label for="endereco">Endereço</label>
+                                            <div class="input-container">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                                <input type="text" id="endereco" class="form-control" placeholder="Endereço">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                             <label for="password">Nova Senha</label>
+                                            <div class="input-container">
+                                                <i class="fas fa-lock"></i>
+                                                <input type="password" id="password" class="form-control" placeholder="Nova senha (deixe em branco para não alterar)">
+                                            </div>
                                         </div>
                                         
                                         <button type="submit" class="btn btn-primary">Atualizar</button>
-                                        <div id="accountMessage" class="mt-3"></div>
+                                        <div id="accountMessage" class="mt-3" style="font-weight: 600;"></div>
                                         
                                         <hr>
 
                                         <button type="button" class="btn btn-danger" id="deleteAccountBtn">
                                             <i class="fas fa-trash"></i> Excluir Conta
                                         </button>
-                                        <div id="deleteMessage" class="mt-3"></div>
+                                        <div id="deleteMessage" class="mt-3" style="font-weight: 600;"></div>
                                     </form>
                                 </div>
                             </div>
@@ -452,6 +471,7 @@
 
     function logout() {
         localStorage.removeItem('token');
+        localStorage.removeItem('userType');
         window.location.href = 'login.html';
     }
 
@@ -468,10 +488,15 @@
         if (element) {
             element.closest('li.nav-item').classList.add('active');
         }
+        
+        // Limpa mensagens ao trocar de aba
+         document.getElementById('darMoedasMessage').innerHTML = '';
+         document.getElementById('accountMessage').innerHTML = '';
+         document.getElementById('deleteMessage').innerHTML = '';
     }
 
     // Função para exibir mensagens de feedback (Bootstrap alerts)
-    function showMessage(msg, type='success', containerId = 'resgatarMessage') {
+    function showMessage(msg, type='success', containerId = 'darMoedasMessage') {
         const msgDiv = document.getElementById(containerId);
         if (!msgDiv) return;
         
@@ -488,11 +513,13 @@
         setTimeout(() => {
             const alert = msgDiv.querySelector('.alert');
             if(alert) {
-                new bootstrap.Alert(alert).close();
+                const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                if (bsAlert) bsAlert.close();
             }
         }, 5000);
     }
     
+    // Funções específicas para mensagens da conta
     function showAccountMessage(msg, type='success') {
         const msgDiv = document.getElementById('accountMessage');
         msgDiv.textContent = msg;
@@ -505,171 +532,140 @@
         msgDiv.style.color = (type === 'success') ? 'green' : 'red';
     }
 
+    // Obtém o perfil do professor (espera objeto com id)
+    async function getProfessorProfile() {
+        const res = await fetch(`${API_BASE}/professores/perfil`, { headers: setAuthHeaders() });
+        if (!res.ok) throw new Error('Não foi possível obter perfil do professor');
+        return res.json();
+    }
 
-    // Carregar saldo do aluno (usa /alunos/perfil para pegar id e depois /transacoes/aluno/{id}/saldo)
-    async function carregarSaldo() {
+    // Carregar saldo do professor (usa /transacoes/professor/{id}/saldo)
+    async function carregarSaldoProfessor() {
         try {
-            // tenta obter perfil do aluno
-            const perfilRes = await fetch(`${API_BASE}/alunos/perfil`, { headers: setAuthHeaders() });
-            if (!perfilRes.ok) throw new Error('Erro ao buscar perfil');
-            const perfil = await perfilRes.json();
-            const alunoId = perfil?.id;
-            if (!alunoId) throw new Error('Aluno não encontrado');
-
-            const res = await fetch(`${API_BASE}/transacoes/aluno/${alunoId}/saldo`, { headers: setAuthHeaders() });
-            if (!res.ok) throw new Error('Erro ao buscar saldo');
-            const data = await res.json();
-            const saldo = data?.balance ?? data?.saldo ?? 0;
-            document.getElementById('saldoMoedas').textContent = `${saldo} moedas`;
-        } catch (error) {
-            console.error(error);
-            document.getElementById('saldoMoedas').textContent = 'Erro!';
+            const perfil = await getProfessorProfile();
+            if (!perfil || !perfil.id) {
+                document.getElementById('moedasDistribuidas').textContent = 'Perfil não encontrado';
+                return;
+            }
+            const res = await fetch(`${API_BASE}/transacoes/professor/${perfil.id}/saldo`, { headers: setAuthHeaders() });
+            if (res.ok) {
+                const pb = await res.json();
+                const saldo = pb?.balance ?? pb?.saldo ?? 0;
+                document.getElementById('moedasDistribuidas').textContent = `${saldo} moedas`;
+            } else {
+                document.getElementById('moedasDistribuidas').textContent = 'Erro ao buscar saldo';
+            }
+        } catch (err) {
+            console.error(err);
+            document.getElementById('moedasDistribuidas').textContent = 'Erro!';
         }
     }
 
-    // Carregar histórico de transações (tenta /alunos/historico)
-    async function carregarHistorico() {
+    // Tenta buscar aluno por matrícula via endpoint backend
+    async function buscarAlunoPorMatricula(matricula) {
+        const res = await fetch(`${API_BASE}/alunos/buscarPorMatricula?matricula=${encodeURIComponent(matricula)}`, { headers: setAuthHeaders() });
+        if (!res.ok) {
+            let body = '';
+            try { body = await res.text(); } catch (e) {}
+            console.error('buscarPorMatricula failed', { status: res.status, body });
+            if (res.status === 401 || res.status === 403) {
+                // token inválido/expirado
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+                throw new Error('Não autenticado');
+            }
+            throw new Error('Aluno não encontrado');
+        }
+        return res.json();
+    }
+
+    // Carregar histórico de envios - tenta endpoint próprio, se não existir apenas limpa
+    async function carregarHistoricoEnvios() {
         try {
-            const res = await fetch(`${API_BASE}/alunos/historico`, { headers: setAuthHeaders() });
-            if (!res.ok) throw new Error('Erro ao buscar histórico');
-            const data = await res.json();
-            const div = document.getElementById('historicoTransacoes');
-            div.innerHTML = '';
-            
-            if (data.length === 0) {
-                div.innerHTML = '<p>Nenhuma transação encontrada.</p>';
+            const perfil = await getProfessorProfile();
+            if (!perfil?.id) return;
+            const res = await fetch(`${API_BASE}/professores/historico?professorId=${perfil.id}`, { headers: setAuthHeaders() });
+            if (!res.ok) {
+                // backend pode não ter endpoint; apenas limpa UI
+                document.getElementById('historicoEnvios').innerHTML = '<p>Nenhum histórico disponível.</p>';
                 return;
             }
-
+            const data = await res.json();
+            const div = document.getElementById('historicoEnvios');
+            div.innerHTML = '';
+            if (!data || data.length === 0) {
+                div.innerHTML = '<p>Nenhum envio de moedas encontrado.</p>';
+                return;
+            }
             data.forEach(t => {
                 const item = document.createElement('div');
                 item.className = 'result-item';
                 const dataFormatada = t.criadoEm ? new Date(t.criadoEm).toLocaleString('pt-BR') : 'Data indisponível';
                 item.innerHTML = `
-                    <strong>${t.mensagem || t.descricao || 'Transação'}</strong>
-                    <span>${t.quantidade || t.custo || 0} moedas - ${dataFormatada}</span>
+                    <strong>${t.mensagem || 'Motivo não informado'}</strong>
+                    <span>Enviado em: ${dataFormatada}</span>
+                    <span class="aluno-info">Para: ${t.aluno?.nome || t.alunoNome || 'Aluno'} (Matrícula: ${t.aluno?.matricula || t.alunoMatricula || 'N/A'})</span>
+                    <h5 class="mt-2 mb-0 text-success">+ ${t.quantidade} moedas</h5>
                 `;
                 div.appendChild(item);
             });
         } catch (error) {
             console.error(error);
-            document.getElementById('historicoTransacoes').innerHTML = '<p class="text-danger">Erro ao carregar histórico.</p>';
+            document.getElementById('historicoEnvios').innerHTML = '<p class="text-danger">Erro ao carregar histórico.</p>';
         }
     }
 
-    // Carregar vantagens disponíveis
-    async function carregarVantagens() {
-        try {
-            const res = await fetch(`${API_BASE}/vantagens`, { headers: setAuthHeaders() });
-            if (!res.ok) throw new Error('Erro ao buscar vantagens');
-            const data = await res.json();
-            const select = document.getElementById('vantagemSelect');
-            select.innerHTML = `<option value="">Selecione uma vantagem</option>`;
-            data.forEach(v => {
-                const opt = document.createElement('option');
-                opt.value = v.id;
-                opt.textContent = `${v.nome} - ${v.custo} moedas`;
-                select.appendChild(opt);
-            });
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    // Carregar dados do perfil na aba "Conta"
-    async function carregarPerfil() {
-        try {
-            const res = await fetch(`${API_BASE}/alunos/perfil`, { headers: setAuthHeaders() });
-            if (res.ok) {
-                const data = await res.json();
-                document.getElementById('name').value = data.nome || '';
-                document.getElementById('email').value = data.email || '';
-                document.getElementById('matricula').value = data.matricula || '';
-                document.getElementById('curso').value = data.curso || '';
-                document.getElementById('cpf').value = data.cpf || '';
-                document.getElementById('rg').value = data.rg || '';
-                document.getElementById('instituicao').value = data.instituicaoEnsino || '';
-                document.getElementById('endereco').value = data.endereco || '';
-            } else {
-                console.error('Erro ao carregar perfil');
-                showAccountMessage('Erro ao carregar dados do perfil.', 'error');
-            }
-        } catch (error) {
-            console.error(error);
-            showAccountMessage('Erro de conexão ao carregar perfil.', 'error');
-        }
-    }
-
-    // Atualizar dados do perfil
-    document.getElementById('accountForm').addEventListener('submit', async e => {
+    // Listener para o formulário de DAR MOEDAS (usa /transacoes/enviar)
+    document.getElementById('darMoedasForm').addEventListener('submit', async e => {
         e.preventDefault();
-        const formData = {
-            nome: document.getElementById('name').value,
-            email: document.getElementById('email').value,
-            matricula: document.getElementById('matricula').value,
-            curso: document.getElementById('curso').value,
-            cpf: document.getElementById('cpf').value,
-            rg: document.getElementById('rg').value,
-            instituicaoEnsino: document.getElementById('instituicao').value,
-            endereco: document.getElementById('endereco').value
-        };
-        const password = document.getElementById('password').value;
-        if (password) formData.senha = password;
+        const alunoId = parseInt(document.getElementById('alunoId').value, 10);
+        const quantidade = parseInt(document.getElementById('quantidadeMoedas').value, 10);
+        const descricao = document.getElementById('motivoMoedas').value.trim();
 
-        try {
-            const res = await fetch(`${API_BASE}/alunos/atualizarPorCpf?cpf=${formData.cpf}`, {
-                method: 'PUT',
-                headers: setAuthHeaders(),
-                body: JSON.stringify(formData)
-            });
-
-            if (res.ok) {
-                showAccountMessage('Perfil atualizado com sucesso!', 'success');
-                document.getElementById('password').value = '';
-                carregarPerfil(); // Atualiza os campos
-            } else {
-                const data = await res.json();
-                showAccountMessage(data.error || 'Erro ao atualizar perfil', 'error');
-            }
-        } catch (error) {
-            console.error(error);
-            showAccountMessage('Erro de conexão ao atualizar.', 'error');
+        if (!alunoId || !quantidade || !descricao) {
+            return showMessage('Preencha todos os campos.', 'error', 'darMoedasMessage');
         }
-    });
 
-    // Resgatar vantagem
-    document.getElementById('resgatarForm').addEventListener('submit', async e => {
-        e.preventDefault();
-        const vantagemId = document.getElementById('vantagemSelect').value;
-        if (!vantagemId) return showMessage('Selecione uma vantagem', 'error');
+        if (quantidade <= 0) {
+            return showMessage('A quantidade deve ser maior que zero.', 'error', 'darMoedasMessage');
+        }
 
         try {
-            const res = await fetch(`${API_BASE}/alunos/resgatar/${vantagemId}`, {
+            const perfil = await getProfessorProfile();
+            if (!perfil?.id) throw new Error('Perfil do professor não encontrado');
+
+            const res = await fetch(`${API_BASE}/transacoes/enviar`, {
                 method: 'POST',
-                headers: setAuthHeaders()
+                headers: setAuthHeaders(),
+                body: JSON.stringify({
+                    professorId: perfil.id,
+                    alunoId: alunoId,
+                    quantidade: quantidade,
+                    mensagem: descricao
+                })
             });
-            
+
             if (res.ok) {
-                showMessage('Vantagem resgatada com sucesso!', 'success');
-                carregarSaldo();
-                carregarHistorico();
-                document.getElementById('vantagemSelect').value = ''; // Reseta o select
+                showMessage('Moedas enviadas com sucesso!', 'success', 'darMoedasMessage');
+                document.getElementById('darMoedasForm').reset();
+                carregarHistoricoEnvios();
+                carregarSaldoProfessor();
             } else {
-                const data = await res.json();
-                showMessage(data.error || 'Erro ao resgatar', 'error');
+                const data = await res.json().catch(() => ({}));
+                showMessage(data?.message || 'Erro ao enviar moedas. Verifique o ID do aluno.', 'error', 'darMoedasMessage');
             }
         } catch (error) {
             console.error(error);
-             showMessage('Erro de conexão ao resgatar.', 'error');
+            showMessage(error.message || 'Erro de conexão.', 'error', 'darMoedasMessage');
         }
     });
 
-    // Excluir conta do aluno
+    // Excluir conta do professor (mantido)
     document.getElementById('deleteAccountBtn').addEventListener('click', async () => {
-        const id = document.getElementById('matricula').value;
+        const cpf = document.getElementById('cpf').value;
 
-        if (!id) {
-            showDeleteMessage('Matrícula não encontrada. Não foi possível excluir a conta.', 'error');
+        if (!cpf) {
+            showDeleteMessage('CPF não encontrado. Não foi possível excluir a conta.', 'error');
             return;
         }
 
@@ -678,7 +674,7 @@
         }
 
         try {
-            const res = await fetch(`${API_BASE}/alunos/deletarAluno?id=${id}`, {
+            const res = await fetch(`${API_BASE}/professores/deletarPorCpf?cpf=${cpf}`, {
                 method: 'DELETE',
                 headers: setAuthHeaders()
             });
@@ -697,14 +693,31 @@
         }
     });
 
-
     // Inicialização (carrega tudo ao abrir a página)
     document.addEventListener('DOMContentLoaded', () => {
-        carregarSaldo();
-        carregarHistorico();
-        carregarVantagens();
+        carregarHistoricoEnvios();
         carregarPerfil();
+        carregarSaldoProfessor();
+        // Você pode adicionar uma função para carregar os resumos do dashboard aqui
     });
+
+    // garante carregamento do perfil quando usado em outras funções
+    async function carregarPerfil() {
+        try {
+            const perfil = await getProfessorProfile();
+            if (perfil) {
+                document.getElementById('name').value = perfil.nome || '';
+                document.getElementById('email').value = perfil.email || '';
+                document.getElementById('cpf').value = perfil.cpf || '';
+                document.getElementById('rg').value = perfil.rg || '';
+                document.getElementById('departamento').value = perfil.departamento || '';
+                document.getElementById('instituicao').value = perfil.instituicaoEnsino || '';
+                document.getElementById('endereco').value = perfil.endereco || '';
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
 </script>
 </body>

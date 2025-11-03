@@ -1,35 +1,28 @@
 package com.lab.sistema_de_moedas.controller;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.lab.sistema_de_moedas.model.Aluno;
 import com.lab.sistema_de_moedas.service.AlunoServices;
-import com.lab.sistema_de_moedas.service.JwtService;
-
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
-
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/alunos")
 @RequiredArgsConstructor
 public class AlunoController {
-    
+
     private final AlunoServices alunoServices;
 
-    @Autowired
-    private JwtService jwtService;
+    private final com.lab.sistema_de_moedas.service.JwtService jwtService;
+
+    @GetMapping("/buscarPorMatricula")
+    public ResponseEntity<Aluno> buscarPorMatricula(@RequestParam String matricula) {
+        Aluno aluno = alunoServices.buscarAlunoPorMatricula(matricula);
+        if (aluno == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(aluno);
+    }
 
     @PostMapping("criarAluno")
     public ResponseEntity<Aluno> criarAluno(@RequestBody Aluno aluno){
@@ -51,9 +44,6 @@ public class AlunoController {
             return ResponseEntity.status(401).build(); // Não autorizado
         }
     }
-
-
-
 
     @GetMapping("buscarAluno")
     public ResponseEntity<Aluno> buscarAluno(@RequestParam Long id){
@@ -106,5 +96,4 @@ public class AlunoController {
             return ResponseEntity.notFound().build();
         }
     }
-    
 }

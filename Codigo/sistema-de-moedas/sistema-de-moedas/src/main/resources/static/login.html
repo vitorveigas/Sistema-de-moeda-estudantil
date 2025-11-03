@@ -398,7 +398,8 @@
             
             // Show selected tab
             document.getElementById(tabName).classList.remove('hidden');
-            event.target.classList.add('active');
+            // guard event usage
+            if (window.event && window.event.target) window.event.target.classList.add('active');
         }
 
         function toggleUserFields() {
@@ -427,6 +428,13 @@
             document.getElementById('loading').style.display = show ? 'block' : 'none';
         }
 
+        function redirectByUserType(userType) {
+            if (userType === 'ALUNO') return 'aluno-dashboard.html';
+            if (userType === 'EMPRESA') return 'empresa-dashboard.html';
+            if (userType === 'PROFESSOR') return 'professor-dashboard.html';
+            return 'index.html';
+        }
+
         // Login form
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -453,8 +461,8 @@
                     console.log('UserType salvo:', currentUserType);
                     showMessage('Login realizado com sucesso!');
                     setTimeout(() => {
-                        window.location.href = currentUserType === 'ALUNO' ? 'aluno-dashboard.html' : 'empresa-dashboard.html';
-                    }, 1500);
+                        window.location.href = redirectByUserType(currentUserType);
+                    }, 800);
                 } else {
                     showMessage(data.error || 'Erro no login', 'error');
                 }
@@ -509,8 +517,8 @@
                     console.log('UserType salvo no cadastro:', currentUserType);
                     showMessage('Cadastro realizado com sucesso!');
                     setTimeout(() => {
-                        window.location.href = currentUserType === 'ALUNO' ? 'aluno-dashboard.html' : 'empresa-dashboard.html';
-                    }, 1500);
+                        window.location.href = redirectByUserType(currentUserType);
+                    }, 800);
                 } else {
                     showMessage(data.error || 'Erro no cadastro', 'error');
                 }

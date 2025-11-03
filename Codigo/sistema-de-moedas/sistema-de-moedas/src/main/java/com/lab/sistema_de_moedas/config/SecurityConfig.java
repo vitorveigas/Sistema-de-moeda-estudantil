@@ -37,8 +37,12 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/alunos/criarAluno").permitAll()
-                .requestMatchers("alunos/perfil").permitAll()
+                .requestMatchers("/alunos/perfil").permitAll()
+                .requestMatchers("/alunos/buscarPorMatricula").permitAll()
+                .requestMatchers("/professores/criarProfessor").permitAll()
+                .requestMatchers("/professores/perfil").permitAll()
                 .requestMatchers("/empresas/criar").permitAll()
+                .requestMatchers("/transacoes/**").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -53,7 +57,7 @@ public class SecurityConfig {
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
