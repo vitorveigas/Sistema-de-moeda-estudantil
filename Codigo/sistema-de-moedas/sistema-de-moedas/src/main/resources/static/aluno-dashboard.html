@@ -194,17 +194,44 @@
         }
         
         /* Histórico */
-        #historicoTransacoes .result-item {
-             border: 1px solid var(--border-color);
-             padding: 0.75rem;
-             border-radius: 0.35rem;
-             margin-bottom: 0.5rem;
-             background: #fafafa;
-        }
-        #historicoTransacoes .result-item strong {
-            color: var(--primary-blue);
+        .table-responsive {
             display: block;
-            margin-bottom: 0.25rem;
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .table {
+            width: 100%;
+            margin-bottom: 1rem;
+            color: #858796;
+            border-collapse: collapse;
+        }
+        
+        .table thead th {
+            vertical-align: bottom;
+            border-bottom: 2px solid #e3e6f0;
+            background-color: #f8f9fc;
+            color: #4e73df;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        
+        .table tbody td {
+            padding: 0.75rem;
+            border-top: 1px solid #e3e6f0;
+            vertical-align: middle;
+        }
+        
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        .empty-message {
+            text-align: center;
+            padding: 2rem;
+            color: #858796;
+            font-style: italic;
         }
 
     </style>
@@ -324,8 +351,9 @@
                             <h2><i class="fas fa-history"></i> Histórico de Transações</h2>
                         </div>
                         <div class="card-body">
-                            <div id="historicoTransacoes">
-                                </div>
+                            <div id="historicoTransacoes" class="table-responsive">
+                                <!-- O conteúdo será preenchido dinamicamente via JavaScript -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -468,6 +496,11 @@
         if (element) {
             element.closest('li.nav-item').classList.add('active');
         }
+
+        // Carregar dados específicos de cada aba
+        if (tabName === 'historico') {
+            carregarHistorico();
+        }
     }
 
     // Função para exibir mensagens de feedback (Bootstrap alerts)
@@ -527,30 +560,66 @@
         }
     }
 
-    // Carregar histórico de transações (tenta /alunos/historico)
+    // Carregar histórico de transações: obtém o perfil para pegar o id do aluno e chama
+    // /transacoes/aluno/{id}/historico. O backend atual pode retornar formatos diferentes
+    // (lista de transações, uma única transação ou objeto de saldo) — tratamos todos.
     async function carregarHistorico() {
         try {
-            const res = await fetch(`${API_BASE}/alunos/historico`, { headers: setAuthHeaders() });
+            // pega perfil para obter o id do aluno
+            const perfilRes = await fetch(`${API_BASE}/alunos/perfil`, { headers: setAuthHeaders() });
+            if (!perfilRes.ok) throw new Error('Erro ao buscar perfil');
+            const perfil = await perfilRes.json();
+            const alunoId = perfil?.id;
+            if (!alunoId) throw new Error('Aluno não encontrado');
+
+            const res = await fetch(`${API_BASE}/transacoes/aluno/${alunoId}/historico`, { headers: setAuthHeaders() });
             if (!res.ok) throw new Error('Erro ao buscar histórico');
             const data = await res.json();
             const div = document.getElementById('historicoTransacoes');
             div.innerHTML = '';
-            
-            if (data.length === 0) {
+
+            // Se o backend retornar vazio, mostramos mensagem clara
+            if (!data || !data.length) {
                 div.innerHTML = '<p>Nenhuma transação encontrada.</p>';
                 return;
             }
 
+            // Ordenar transações por data (mais recentes primeiro)
+            data.sort((a, b) => new Date(b.criadoEm) - new Date(a.criadoEm));
+
+            // Criar tabela para exibir transações
+            const table = document.createElement('table');
+            table.className = 'table table-striped';
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Professor</th>
+                        <th>Quantidade</th>
+                        <th>Mensagem</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            `;
+            
+            const tbody = table.querySelector('tbody');
             data.forEach(t => {
-                const item = document.createElement('div');
-                item.className = 'result-item';
+                const tr = document.createElement('tr');
                 const dataFormatada = t.criadoEm ? new Date(t.criadoEm).toLocaleString('pt-BR') : 'Data indisponível';
-                item.innerHTML = `
-                    <strong>${t.mensagem || t.descricao || 'Transação'}</strong>
-                    <span>${t.quantidade || t.custo || 0} moedas - ${dataFormatada}</span>
+                const nomeProfessor = t.professor?.nome || 'Professor';
+                tr.innerHTML = `
+                    <td>${nomeProfessor}</td>
+                    <td>${t.quantidade || 0} moedas</td>
+                    <td>${t.mensagem || 'Sem mensagem'}</td>
+                    <td>${dataFormatada}</td>
                 `;
-                div.appendChild(item);
+                tbody.appendChild(tr);
             });
+
+            div.appendChild(table);
+            // Se nenhuma transação for encontrada
+            div.innerHTML = '<p>Nenhum histórico disponível.</p>';
         } catch (error) {
             console.error(error);
             document.getElementById('historicoTransacoes').innerHTML = '<p class="text-danger">Erro ao carregar histórico.</p>';
@@ -560,12 +629,12 @@
     // Carregar vantagens disponíveis
     async function carregarVantagens() {
         try {
-            const res = await fetch(`${API_BASE}/vantagens`, { headers: setAuthHeaders() });
-            if (!res.ok) throw new Error('Erro ao buscar vantagens');
-            const data = await res.json();
+            const vantagensRes = await fetch(`${API_BASE}/vantagens`, { headers: setAuthHeaders() });
+            if (!vantagensRes.ok) throw new Error('Erro ao buscar vantagens');
+            const vantagensData = await vantagensRes.json();
             const select = document.getElementById('vantagemSelect');
             select.innerHTML = `<option value="">Selecione uma vantagem</option>`;
-            data.forEach(v => {
+            vantagensData.forEach(v => {
                 const opt = document.createElement('option');
                 opt.value = v.id;
                 opt.textContent = `${v.nome} - ${v.custo} moedas`;

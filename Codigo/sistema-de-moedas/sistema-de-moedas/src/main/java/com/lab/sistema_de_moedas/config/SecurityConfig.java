@@ -42,7 +42,13 @@ public class SecurityConfig {
                 .requestMatchers("/professores/criarProfessor").permitAll()
                 .requestMatchers("/professores/perfil").permitAll()
                 .requestMatchers("/empresas/criar").permitAll()
+                // Permite endpoints de transações (incluindo histórico do aluno)
                 .requestMatchers("/transacoes/**").permitAll()
+                // Matcher explícito por método GET para evitar bloqueio por método/CORS
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/transacoes/aluno/**").permitAll()
+                // Permite também rota legado ou alternativa de histórico de alunos caso seja usada
+                .requestMatchers("/transacoes/aluno/**").permitAll()
+                .requestMatchers("/alunos/historico").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

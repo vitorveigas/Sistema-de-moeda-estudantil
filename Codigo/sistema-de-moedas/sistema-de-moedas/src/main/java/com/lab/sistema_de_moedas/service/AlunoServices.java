@@ -1,9 +1,10 @@
 package com.lab.sistema_de_moedas.service;
-
+import com.lab.sistema_de_moedas.repository.TransacaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.lab.sistema_de_moedas.model.Aluno;
+import com.lab.sistema_de_moedas.model.Transacao;
 import com.lab.sistema_de_moedas.repository.AlunoRepositories;
 
 import java.util.List;
@@ -11,9 +12,16 @@ import java.util.Optional;
 
 @Service
 public class AlunoServices {
+
+    @Autowired
+    private final TransacaoRepository transacaoRepository;
     
     @Autowired
     private AlunoRepositories alunoRepositories;
+
+    AlunoServices(TransacaoRepository transacaoRepository) {
+        this.transacaoRepository = transacaoRepository;
+    }
 
     public void salvarAluno(Aluno aluno){
         alunoRepositories.saveAndFlush(aluno);
@@ -102,5 +110,9 @@ public class AlunoServices {
     // adicionado: versão que retorna Optional para uso seguro no controller
     public java.util.Optional<Aluno> buscarAlunoPorEmailOptional(String email) {
         return alunoRepositories.findByEmail(email);
+    }
+
+    public Transacao buscarTransacaoPorAlunoId(long alunoId) {
+        return transacaoRepository.findTransacaoByAlunoId(alunoId);
     }
 }

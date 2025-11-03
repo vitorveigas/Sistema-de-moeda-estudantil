@@ -100,4 +100,11 @@ public class ProfessorCoinService {
     public Optional<AlunoBalance> getAlunoBalance(Long alunoId) {
         return alunoRepo.findById(alunoId).flatMap(alunoBalanceRepo::findByAluno);
     }
+
+    public List<Transacao> getHistoricoAluno(Long alunoId) {
+        if (alunoId == null) {
+            throw new IllegalArgumentException("ID do aluno não pode ser nulo");
+        }
+        return transacaoRepo.findAllByAlunoIdOrderByCriadoEmDesc(alunoId);
+    }
 }
