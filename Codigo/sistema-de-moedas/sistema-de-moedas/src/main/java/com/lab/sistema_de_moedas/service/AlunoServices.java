@@ -112,7 +112,12 @@ public class AlunoServices {
         return alunoRepositories.findByEmail(email);
     }
 
-    public Transacao buscarTransacaoPorAlunoId(long alunoId) {
-        return transacaoRepository.findTransacaoByAlunoId(alunoId);
+    public List<Transacao> buscarTransacoesDoAluno(Long alunoId) {
+        Aluno aluno = alunoRepositories.findById(alunoId)
+                .orElseThrow(() -> new RuntimeException("Aluno não encontrado com ID: " + alunoId));
+
+        // Busca todas as transações desse aluno
+        List<Transacao> transacoes = transacaoRepository.findAllByAlunoId(aluno.getId());
+        return transacoes;
     }
 }

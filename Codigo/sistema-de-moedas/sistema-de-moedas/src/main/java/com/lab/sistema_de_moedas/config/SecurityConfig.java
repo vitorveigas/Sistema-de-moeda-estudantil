@@ -4,6 +4,7 @@ import com.lab.sistema_de_moedas.security.JwtAuthFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -16,6 +17,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -31,10 +33,12 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // Endpoints públicos
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/alunos/criarAluno").permitAll()
                 .requestMatchers("/alunos/perfil").permitAll()
@@ -42,13 +46,13 @@ public class SecurityConfig {
                 .requestMatchers("/professores/criarProfessor").permitAll()
                 .requestMatchers("/professores/perfil").permitAll()
                 .requestMatchers("/empresas/criar").permitAll()
-                // Permite endpoints de transações (incluindo histórico do aluno)
+                // Endpoints de transações
                 .requestMatchers("/transacoes/**").permitAll()
-                // Matcher explícito por método GET para evitar bloqueio por método/CORS
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/transacoes/aluno/**").permitAll()
-                // Permite também rota legado ou alternativa de histórico de alunos caso seja usada
-                .requestMatchers("/transacoes/aluno/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/transacoes/aluno/**").permitAll()
+                .requestMatchers("/vantagens/**").permitAll()
+
                 .requestMatchers("/alunos/historico").permitAll()
+                // Tudo o resto exige autenticação
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -59,13 +63,20 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        // 🔹 Defina explicitamente as origens permitidas
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:5500",
+                "http://127.0.0.1:5500"
+        ));
+        // 🔹 Métodos HTTP liberados
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // 🔹 Cabeçalhos e cookies
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 }

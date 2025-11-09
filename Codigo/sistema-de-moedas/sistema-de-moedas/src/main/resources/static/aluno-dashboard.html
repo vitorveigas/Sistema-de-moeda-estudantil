@@ -572,7 +572,7 @@
             const alunoId = perfil?.id;
             if (!alunoId) throw new Error('Aluno não encontrado');
 
-            const res = await fetch(`${API_BASE}/transacoes/aluno/${alunoId}/historico`, { headers: setAuthHeaders() });
+            const res = await fetch(`${API_BASE}/alunos/${alunoId}/transacoes`, { headers: setAuthHeaders() });
             if (!res.ok) throw new Error('Erro ao buscar histórico');
             const data = await res.json();
             const div = document.getElementById('historicoTransacoes');

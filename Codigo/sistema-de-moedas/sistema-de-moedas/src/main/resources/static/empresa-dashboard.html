@@ -3,660 +3,282 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Empresa - Sistema de Moedas Estudantis</title>
+    <title>Dashboard Empresa - Sistema de Vantagens</title>
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary-blue: #4e73df;
+            --secondary-gray: #858796;
+            --light-gray: #f8f9fc;
+            --white: #ffffff;
+            --dark-blue: #2e4ab1;
+            --border-color: #e3e6f0;
+            --text-dark: #5a5c69;
+            --text-light: #b7b9cc;
+            --success: #1cc88a;
+            --danger: #e74a3b;
         }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            background: white;
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .header h1 {
-            color: #333;
-            font-size: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .header h1 i {
-            color: #667eea;
-        }
-        
-        .logout-btn {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .logout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
-        }
-        
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-        }
-        
-        .card h2 {
-            color: #333;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .card h2 i {
-            color: #667eea;
-        }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .input-container {
-            position: relative;
-        }
-        
-        .input-container i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #999;
-        }
-        
-        input, textarea, select {
-            width: 100%;
-            padding: 1rem 1rem 1rem 45px;
-            border: 2px solid #e1e5e9;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: #fafbfc;
-        }
-        
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: #667eea;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-        
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        }
-        
-        .btn-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-        
-        .hidden {
-            display: none;
-        }
-        
-        .message {
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            font-weight: 500;
-        }
-        
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .result-card {
-            background: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 15px;
-            margin-top: 1rem;
-            border-left: 4px solid #667eea;
-        }
-        
-        .result-card h4 {
-            color: #333;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .result-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-        
-        .result-item {
-            background: white;
-            padding: 0.75rem;
-            border-radius: 8px;
-            border: 1px solid #e1e5e9;
-        }
-        
-        .result-item strong {
-            color: #667eea;
-            display: block;
-            margin-bottom: 0.25rem;
-            font-size: 0.9rem;
-        }
-        
-        .result-item span {
-            color: #333;
-            font-size: 0.95rem;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 2rem;
-        }
-        
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .tabs {
-            display: flex;
-            margin-bottom: 2rem;
-            background: white;
-            border-radius: 15px;
-            padding: 5px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .tab {
-            flex: 1;
-            padding: 1rem;
-            text-align: center;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            border-radius: 10px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            color: #666;
-        }
-        
-        .tab.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-        }
+
+        body { font-family: 'Nunito', sans-serif; background-color: var(--light-gray); }
+
+        #wrapper { display: flex; }
+        #content-wrapper { display: flex; flex-direction: column; width: 100%; }
+        #content { flex: 1 0 auto; }
+
+        /* Sidebar */
+        .sidebar { width: 224px; min-height: 100vh; background: linear-gradient(180deg, var(--primary-blue) 10%, var(--dark-blue) 100%); }
+        .sidebar-brand { height: 4.375rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; color: var(--white); text-decoration: none; }
+        .sidebar .nav-link { display: block; padding: 1rem; color: var(--text-light); text-decoration: none; cursor: pointer; }
+        .sidebar .nav-link i { margin-right: 0.5rem; }
+        .sidebar .nav-item.active .nav-link { color: var(--white); background-color: rgba(255,255,255,0.1); }
+        .sidebar .nav-item:hover .nav-link { color: var(--white); }
+        .sidebar .sidebar-divider { margin: 0 1rem 1rem; border-top: 1px solid rgba(255,255,255,0.15); }
+
+        /* Topbar */
+        .topbar { height: 4.375rem; margin-bottom: 1.5rem; background-color: var(--white); box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; }
+        .logout-btn { background: var(--danger); color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .logout-btn:hover { background: #c73e30; }
+
+        /* Tabs */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Cards */
+        .card-summary { border-left-width: 0.25rem; }
+        .border-left-primary { border-left-color: var(--primary-blue) !important; }
+        .border-left-success { border-left-color: var(--success) !important; }
+        .text-primary { color: var(--primary-blue) !important; }
+        .text-success { color: var(--success) !important; }
+        .text-gray-800 { color: #5a5c69 !important; }
+
+        /* Form */
+        .input-container { position: relative; margin-bottom: 1rem; }
+        .input-container i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #999; }
+        input.form-control, select.form-select, textarea.form-control { padding-left: 45px; }
+        input.form-control:focus, select.form-select:focus, textarea.form-control:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 0.25rem rgba(78,115,223,0.25); }
+
+        /* Lista de vantagens */
+        #listaVantagens .result-item { border: 1px solid var(--border-color); padding: 0.75rem; border-radius: 0.35rem; margin-bottom: 0.5rem; background: #fafafa; }
+        #listaVantagens .result-item strong { color: var(--primary-blue); display: block; margin-bottom: 0.25rem; }
+        #listaVantagens .result-item .detalhes { font-style: italic; color: var(--text-dark); }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-building"></i> Dashboard da Empresa</h1>
-            <button class="logout-btn" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> Sair
-            </button>
-        </div>
-        
-        <div class="tabs">
-            <button class="tab active" onclick="showTab('create')">Criar Empresa</button>
-            <button class="tab" onclick="showTab('search')">Buscar Empresa</button>
-            <button class="tab" onclick="showTab('update')">Atualizar Empresa</button>
-            <button class="tab" onclick="showTab('delete')">Deletar Empresa</button>
-        </div>
-        
-        <div id="message"></div>
-        
-        <!-- Create Tab -->
-        <div id="create" class="tab-content">
-            <div class="card">
-                <h2><i class="fas fa-building"></i> Criar Nova Empresa</h2>
-                <form id="createForm">
-                    <div class="form-group">
-                        <label for="createName">Nome</label>
-                        <div class="input-container">
-                            <i class="fas fa-user"></i>
-                            <input type="text" id="createName" placeholder="Digite o nome" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="createEmail">Email</label>
-                        <div class="input-container">
-                            <i class="fas fa-envelope"></i>
-                            <input type="email" id="createEmail" placeholder="Digite o email" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="createPassword">Senha</label>
-                        <div class="input-container">
-                            <i class="fas fa-lock"></i>
-                            <input type="password" id="createPassword" placeholder="Digite a senha" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="createCnpj">CNPJ</label>
-                        <div class="input-container">
-                            <i class="fas fa-building"></i>
-                            <input type="text" id="createCnpj" placeholder="00.000.000/0000-00">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="createRazaoSocial">Razão Social</label>
-                        <div class="input-container">
-                            <i class="fas fa-briefcase"></i>
-                            <input type="text" id="createRazaoSocial" placeholder="Digite a razão social">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="createEndereco">Endereço</label>
-                        <div class="input-container">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <input type="text" id="createEndereco" placeholder="Digite o endereço">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-plus"></i> Criar Empresa
-                    </button>
-                </form>
+
+<div id="wrapper">
+
+    <!-- Sidebar -->
+    <ul class="navbar-nav sidebar">
+        <a class="sidebar-brand" href="#"><i class="fas fa-building me-2"></i>Empresa</a>
+        <hr class="sidebar-divider my-0">
+        <li class="nav-item active"><a class="nav-link" onclick="showTab('dashboard', this)"><i class="fas fa-tachometer-alt"></i>Dashboard</a></li>
+        <hr class="sidebar-divider">
+        <li class="nav-item"><a class="nav-link" onclick="showTab('cadastrar', this)"><i class="fas fa-plus-circle"></i>Cadastrar Vantagem</a></li>
+        <li class="nav-item"><a class="nav-link" onclick="showTab('listar', this)"><i class="fas fa-list"></i>Listar Vantagens</a></li>
+        <li class="nav-item"><a class="nav-link" onclick="showTab('conta', this)"><i class="fas fa-user"></i>Minha Conta</a></li>
+    </ul>
+
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+
+            <!-- Topbar -->
+            <div class="topbar">
+                <h1 class="h3 text-gray-800">Dashboard da Empresa</h1>
+                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Sair</button>
             </div>
-        </div>
-        
-        <!-- Search Tab -->
-        <div id="search" class="tab-content hidden">
-            <div class="card">
-                <h2><i class="fas fa-search"></i> Buscar Empresa por CNPJ</h2>
-                <form id="searchForm">
-                    <div class="form-group">
-                        <label for="searchCnpj">CNPJ</label>
-                        <div class="input-container">
-                            <i class="fas fa-building"></i>
-                            <input type="text" id="searchCnpj" placeholder="00.000.000/0000-00" required>
+
+            <div class="container-fluid pt-4">
+
+                <!-- Dashboard -->
+                <div id="dashboard" class="tab-content active">
+                    <div class="row">
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card card-summary border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Vantagens Cadastradas</div>
+                                            <div id="totalVantagens" class="h5 mb-0 font-weight-bold text-gray-800">0</div>
+                                        </div>
+                                        <div class="col-auto"><i class="fas fa-gift fa-2x text-gray-300"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card card-summary border-left-success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Funcionários Premiados</div>
+                                            <div id="totalFuncionarios" class="h5 mb-0 font-weight-bold text-gray-800">0</div>
+                                        </div>
+                                        <div class="col-auto"><i class="fas fa-user-tie fa-2x text-gray-300"></i></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn">
-                        <i class="fas fa-search"></i> Buscar
-                    </button>
-                </form>
-                <div id="searchResult"></div>
-            </div>
-        </div>
-        
-        <!-- Update Tab -->
-        <div id="update" class="tab-content hidden">
-            <div class="card">
-                <h2><i class="fas fa-edit"></i> Atualizar Empresa</h2>
-                <form id="updateForm">
-                    <div class="form-group">
-                        <label for="updateCnpj">CNPJ da Empresa</label>
-                        <div class="input-container">
-                            <i class="fas fa-building"></i>
-                            <input type="text" id="updateCnpj" placeholder="00.000.000/0000-00" required>
+                </div>
+
+                <!-- Cadastrar Vantagem -->
+                <div id="cadastrar" class="tab-content">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3"><h2><i class="fas fa-plus-circle"></i> Cadastrar Vantagem</h2></div>
+                        <div class="card-body">
+                            <form id="cadastrarVantagemForm">
+                                <div class="input-container"><i class="fas fa-gift"></i>
+                                    <input type="text" id="nomeVantagem" class="form-control" placeholder="Nome da Vantagem" required>
+                                </div>
+                                <div class="input-container"><i class="fas fa-comment-alt"></i>
+                                    <textarea id="descricaoVantagem" class="form-control" placeholder="Descrição" required></textarea>
+                                </div>
+                                <div class="input-container"><i class="fas fa-dollar-sign"></i>
+                                    <input type="number" id="valorVantagem" class="form-control" placeholder="Valor (opcional)">
+                                </div>
+                                <button type="submit" class="btn btn-success w-100"><i class="fas fa-paper-plane"></i> Cadastrar</button>
+                                <div id="cadastrarMessage" class="mt-3 fw-bold"></div>
+                            </form>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="updateName">Nome</label>
-                        <div class="input-container">
-                            <i class="fas fa-user"></i>
-                            <input type="text" id="updateName" placeholder="Digite o nome">
+                </div>
+
+                <!-- Listar Vantagens -->
+                <div id="listar" class="tab-content">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3"><h2><i class="fas fa-list"></i> Vantagens Cadastradas</h2></div>
+                        <div class="card-body" id="listaVantagens">
+                            <p>Nenhuma vantagem cadastrada.</p>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="updateEmail">Email</label>
-                        <div class="input-container">
-                            <i class="fas fa-envelope"></i>
-                            <input type="email" id="updateEmail" placeholder="Digite o email">
+                </div>
+
+                <!-- Minha Conta -->
+                <div id="conta" class="tab-content">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3"><h2><i class="fas fa-user"></i> Minha Conta</h2></div>
+                        <div class="card-body">
+                            <form id="accountForm">
+                                <div class="input-container"><i class="fas fa-building"></i>
+                                    <input type="text" id="nomeEmpresa" class="form-control" placeholder="Nome da Empresa" required>
+                                </div>
+                                <div class="input-container"><i class="fas fa-envelope"></i>
+                                    <input type="email" id="emailEmpresa" class="form-control" placeholder="Email" required>
+                                </div>
+                                <div class="input-container"><i class="fas fa-id-badge"></i>
+                                    <input type="text" id="cnpjEmpresa" class="form-control" placeholder="CNPJ" readonly>
+                                </div>
+                                <div class="input-container"><i class="fas fa-map-marker-alt"></i>
+                                    <input type="text" id="enderecoEmpresa" class="form-control" placeholder="Endereço">
+                                </div>
+                                <div class="input-container"><i class="fas fa-lock"></i>
+                                    <input type="password" id="senhaEmpresa" class="form-control" placeholder="Nova Senha">
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Atualizar</button>
+                                <div id="accountMessage" class="mt-3 fw-bold"></div>
+                                <hr>
+                                <button type="button" class="btn btn-danger w-100" id="deleteAccountBtn"><i class="fas fa-trash"></i> Excluir Conta</button>
+                                <div id="deleteMessage" class="mt-3 fw-bold"></div>
+                            </form>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="updatePassword">Senha</label>
-                        <div class="input-container">
-                            <i class="fas fa-lock"></i>
-                            <input type="password" id="updatePassword" placeholder="Digite a nova senha">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="updateRazaoSocial">Razão Social</label>
-                        <div class="input-container">
-                            <i class="fas fa-briefcase"></i>
-                            <input type="text" id="updateRazaoSocial" placeholder="Digite a razão social">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="updateEndereco">Endereço</label>
-                        <div class="input-container">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <input type="text" id="updateEndereco" placeholder="Digite o endereço">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn">
-                        <i class="fas fa-save"></i> Atualizar
-                    </button>
-                </form>
-            </div>
-        </div>
-        
-        <!-- Delete Tab -->
-        <div id="delete" class="tab-content hidden">
-            <div class="card">
-                <h2><i class="fas fa-trash"></i> Deletar Empresa</h2>
-                <form id="deleteForm">
-                    <div class="form-group">
-                        <label for="deleteCnpj">CNPJ da Empresa</label>
-                        <div class="input-container">
-                            <i class="fas fa-building"></i>
-                            <input type="text" id="deleteCnpj" placeholder="00.000.000/0000-00" required>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash"></i> Deletar Empresa
-                    </button>
-                </form>
+                </div>
+
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        let currentToken = localStorage.getItem('token');
-        let currentUserType = localStorage.getItem('userType');
-        const API_BASE = 'http://localhost:8080';
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // TAB NAVIGATION
+    function showTab(tabName, element) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.getElementById(tabName).classList.add('active');
+        document.querySelectorAll('.sidebar .nav-item').forEach(t => t.classList.remove('active'));
+        if (element) element.closest('li.nav-item').classList.add('active');
+    }
 
-        // Check authentication
-        if (!currentToken) {
-            window.location.href = 'login.html';
-        }
+    // LOGOUT
+    function logout() {
+        alert('Você saiu do sistema!');
+        // aqui redireciona para login real se existir
+    }
 
-        function showTab(tabName) {
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.add('hidden');
-            });
-            
-            // Remove active class from all tabs
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Show selected tab
-            document.getElementById(tabName).classList.remove('hidden');
-            event.target.classList.add('active');
-        }
+    // LOCAL STORAGE SIMULADO
+    let vantagens = JSON.parse(localStorage.getItem('vantagens')) || [];
+    let empresa = JSON.parse(localStorage.getItem('empresa')) || {nome:'Minha Empresa', email:'empresa@teste.com', cnpj:'00.000.000/0001-00', endereco:''};
 
-        function showMessage(message, type = 'success') {
-            const messageDiv = document.getElementById('message');
-            messageDiv.innerHTML = `<div class="message ${type}">${message}</div>`;
-            setTimeout(() => {
-                messageDiv.innerHTML = '';
-            }, 5000);
-        }
+    // CARREGAR DASHBOARD
+    function atualizarDashboard() {
+        document.getElementById('totalVantagens').innerText = vantagens.length;
+        document.getElementById('totalFuncionarios').innerText = Math.floor(Math.random()*50); // simula número de premiados
+    }
 
-        function setAuthHeaders() {
-            return {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${currentToken}`
-            };
-        }
-
-        function limparCnpj(cnpj) {
-            return cnpj.replace(/\D/g, '');
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('userType');
-            window.location.href = 'login.html';
-        }
-
-        // Create form
-        document.getElementById('createForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = {
-                nome: document.getElementById('createName').value,
-                email: document.getElementById('createEmail').value,
-                senha: document.getElementById('createPassword').value,
-                cnpj: document.getElementById('createCnpj').value,
-                razaoSocial: document.getElementById('createRazaoSocial').value,
-                endereco: document.getElementById('createEndereco').value
-            };
-            
-            try {
-                const response = await fetch(`${API_BASE}/empresas/criar`, {
-                    method: 'POST',
-                    headers: setAuthHeaders(),
-                    body: JSON.stringify(formData)
-                });
-                
-                if (response.ok) {
-                    showMessage('Empresa criada com sucesso!');
-                    document.getElementById('createForm').reset();
-                } else {
-                    const data = await response.json();
-                    showMessage(data.error || 'Erro ao criar empresa', 'error');
-                }
-            } catch (error) {
-                showMessage('Erro de conexão', 'error');
-            }
+    // LISTAR VANTAGENS
+    function listarVantagens() {
+        const lista = document.getElementById('listaVantagens');
+        if(vantagens.length === 0) { lista.innerHTML = '<p>Nenhuma vantagem cadastrada.</p>'; return; }
+        lista.innerHTML = '';
+        vantagens.forEach((v, i) => {
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            div.innerHTML = `<strong>${v.nome}</strong>
+                             <span class="detalhes">${v.descricao}</span>
+                             <span>Valor: ${v.valor ? 'R$ '+v.valor : 'Não informado'}</span>`;
+            lista.appendChild(div);
         });
+    }
 
-        // Search form
-        document.getElementById('searchForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const cnpj = limparCnpj(document.getElementById('searchCnpj').value);
-            
-            try {
-                const response = await fetch(`${API_BASE}/empresas/buscarPorCnpj?cnpj=${cnpj}`, {
-                    method: 'GET',
-                    headers: setAuthHeaders()
-                });
-                
-                const data = await response.json();
-                const resultDiv = document.getElementById('searchResult');
-                
-                if (response.ok) {
-                    resultDiv.innerHTML = `
-                        <div class="result-card">
-                            <h4><i class="fas fa-building"></i> Dados da Empresa</h4>
-                            <div class="result-grid">
-                                <div class="result-item">
-                                    <strong>ID</strong>
-                                    <span>${data.id || 'N/A'}</span>
-                                </div>
-                                <div class="result-item">
-                                    <strong>Nome</strong>
-                                    <span>${data.nome || 'N/A'}</span>
-                                </div>
-                                <div class="result-item">
-                                    <strong>Email</strong>
-                                    <span>${data.email || 'N/A'}</span>
-                                </div>
-                                <div class="result-item">
-                                    <strong>CNPJ</strong>
-                                    <span>${data.cnpj || 'N/A'}</span>
-                                </div>
-                                <div class="result-item">
-                                    <strong>Razão Social</strong>
-                                    <span>${data.razaoSocial || 'N/A'}</span>
-                                </div>
-                            </div>
-                            <div class="result-item" style="margin-top: 1rem;">
-                                <strong>Endereço</strong>
-                                <span>${data.endereco || 'N/A'}</span>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    resultDiv.innerHTML = `<div class="message error">${data.error || 'Empresa não encontrada'}</div>`;
-                }
-            } catch (error) {
-                showMessage('Erro de conexão', 'error');
-            }
-        });
+    // CADASTRAR VANTAGEM
+    document.getElementById('cadastrarVantagemForm').addEventListener('submit', function(e){
+        e.preventDefault();
+        const nome = document.getElementById('nomeVantagem').value;
+        const descricao = document.getElementById('descricaoVantagem').value;
+        const valor = document.getElementById('valorVantagem').value;
+        vantagens.push({nome, descricao, valor});
+        localStorage.setItem('vantagens', JSON.stringify(vantagens));
+        document.getElementById('cadastrarMessage').innerText = 'Vantagem cadastrada com sucesso!';
+        this.reset();
+        atualizarDashboard();
+        listarVantagens();
+    });
 
-        // Update form
-        document.getElementById('updateForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const cnpj = limparCnpj(document.getElementById('updateCnpj').value);
-            const formData = {};
-            
-            const name = document.getElementById('updateName').value;
-            const email = document.getElementById('updateEmail').value;
-            const password = document.getElementById('updatePassword').value;
-            const razaoSocial = document.getElementById('updateRazaoSocial').value;
-            const endereco = document.getElementById('updateEndereco').value;
-            
-            if (name) formData.nome = name;
-            if (email) formData.email = email;
-            if (password) formData.senha = password;
-            if (razaoSocial) formData.razaoSocial = razaoSocial;
-            if (endereco) formData.endereco = endereco;
-            
-            try {
-                const response = await fetch(`${API_BASE}/empresas/atualizarPorCnpj?cnpj=${cnpj}`, {
-                    method: 'PUT',
-                    headers: setAuthHeaders(),
-                    body: JSON.stringify(formData)
-                });
-                
-                if (response.ok) {
-                    showMessage('Empresa atualizada com sucesso!');
-                    document.getElementById('updateForm').reset();
-                } else {
-                    const data = await response.json();
-                    showMessage(data.error || 'Erro ao atualizar empresa', 'error');
-                }
-            } catch (error) {
-                showMessage('Erro de conexão', 'error');
-            }
-        });
+    // CARREGAR CONTA
+    function carregarConta() {
+        document.getElementById('nomeEmpresa').value = empresa.nome;
+        document.getElementById('emailEmpresa').value = empresa.email;
+        document.getElementById('cnpjEmpresa').value = empresa.cnpj;
+        document.getElementById('enderecoEmpresa').value = empresa.endereco;
+    }
 
-        // Delete form
-        document.getElementById('deleteForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const cnpj = limparCnpj(document.getElementById('deleteCnpj').value);
-            
-            if (!confirm('Tem certeza que deseja deletar esta empresa?')) {
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE}/empresas/deletarPorCnpj?cnpj=${cnpj}`, {
-                    method: 'DELETE',
-                    headers: setAuthHeaders()
-                });
-                
-                if (response.ok) {
-                    showMessage('Empresa deletada com sucesso!');
-                    document.getElementById('deleteForm').reset();
-                } else {
-                    const data = await response.json();
-                    showMessage(data.error || 'Erro ao deletar empresa', 'error');
-                }
-            } catch (error) {
-                showMessage('Erro de conexão', 'error');
-            }
-        });
-    </script>
+    // ATUALIZAR CONTA
+    document.getElementById('accountForm').addEventListener('submit', function(e){
+        e.preventDefault();
+        empresa.nome = document.getElementById('nomeEmpresa').value;
+        empresa.email = document.getElementById('emailEmpresa').value;
+        empresa.endereco = document.getElementById('enderecoEmpresa').value;
+        localStorage.setItem('empresa', JSON.stringify(empresa));
+        document.getElementById('accountMessage').innerText = 'Dados atualizados com sucesso!';
+    });
+
+    // EXCLUIR CONTA
+    document.getElementById('deleteAccountBtn').addEventListener('click', function(){
+        if(confirm('Tem certeza que deseja excluir a conta?')) {
+            localStorage.clear();
+            document.getElementById('deleteMessage').innerText = 'Conta excluída!';
+            alert('Conta excluída! Reinicie a página.');
+        }
+    });
+
+    // INIT
+    atualizarDashboard();
+    listarVantagens();
+    carregarConta();
+</script>
 </body>
 </html>

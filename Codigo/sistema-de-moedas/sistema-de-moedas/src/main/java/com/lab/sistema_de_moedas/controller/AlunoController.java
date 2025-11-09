@@ -1,8 +1,12 @@
 package com.lab.sistema_de_moedas.controller;
 
 import com.lab.sistema_de_moedas.model.Aluno;
+import com.lab.sistema_de_moedas.model.Transacao;
 import com.lab.sistema_de_moedas.service.AlunoServices;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -95,5 +99,10 @@ public class AlunoController {
             System.out.println("Erro ao deletar aluno: " + e.getMessage());
             return ResponseEntity.notFound().build();
         }
+    }
+    @GetMapping("/{id}/transacoes")
+    public ResponseEntity<List<Transacao>> listarTransacoesDoAluno(@PathVariable Long id) {
+        List<Transacao> transacoes = alunoServices.buscarTransacoesDoAluno(id);
+        return ResponseEntity.ok(transacoes);
     }
 }
