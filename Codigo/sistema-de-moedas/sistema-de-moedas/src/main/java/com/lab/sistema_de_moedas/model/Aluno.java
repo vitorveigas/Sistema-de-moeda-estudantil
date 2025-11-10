@@ -16,8 +16,6 @@ import lombok.experimental.SuperBuilder;
 
 public class Aluno extends Usuario {
     
-    
-
     private String matricula;
     private String curso;
     private String cpf;
