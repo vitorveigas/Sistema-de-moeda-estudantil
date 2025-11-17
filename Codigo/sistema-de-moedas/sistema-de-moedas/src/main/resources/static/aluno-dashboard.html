@@ -6,7 +6,9 @@
     <title>Dashboard Aluno - Sistema de Moedas Estudantis</title>
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quantico:ital,wght@0,400;0,700;1,400;1,700&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <style>
@@ -23,7 +25,7 @@
         }
 
         body {
-            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: Quantico, 'Roboto Condensed', sans-serif ;
             background-color: var(--light-gray);
         }
 
@@ -150,6 +152,28 @@
             font-weight: 700;
             color: var(--primary-blue);
             display: flex; align-items: center; gap: 0.5rem;
+        }
+        .vantagens-toolbar .input-group-text i {
+            color: var(--secondary-gray);
+        }
+        .vantagens-toolbar .btn-outline-primary {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+        .vantagens-toolbar .btn-outline-primary:hover {
+            background-color: var(--primary-blue);
+            color: var(--white);
+        }
+        .vantagem-card h5 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+        .vantagem-card p {
+            color: var(--secondary-gray);
+        }
+        .vantagem-card .badge {
+            background-color: var(--primary-blue);
         }
 
         /* Card de Resumo (Saldo) */
@@ -348,11 +372,22 @@
                 <div id="historico" class="tab-content">
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
-                            <h2><i class="fas fa-history"></i> Histórico de Transações</h2>
+                            <h2><i class="fas fa-history"></i> Histórico de Movimentações</h2>
                         </div>
                         <div class="card-body">
-                            <div id="historicoTransacoes" class="table-responsive">
+                            <div id="historicoMovimentacoes" class="table-responsive">
                                 <!-- O conteúdo será preenchido dinamicamente via JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h2><i class="fas fa-gift"></i> Histórico de Vantagens Resgatadas</h2>
+                        </div>
+                        <div class="card-body">
+                            <div id="historicoVantagens" class="table-responsive">
+                                <!-- lista dinâmica -->
                             </div>
                         </div>
                     </div>
@@ -366,16 +401,23 @@
                                     <h2><i class="fas fa-gift"></i> Resgatar Vantagens</h2>
                                 </div>
                                 <div class="card-body">
-                                    <form id="resgatarForm">
-                                        <div class="input-container">
-                                            <i class="fas fa-gift"></i>
-                                            <select id="vantagemSelect" class="form-select" required>
-                                                <option value="">Selecione uma vantagem</option>
-                                            </select>
+                                    <div class="row vantagens-toolbar g-3 align-items-center mb-3">
+                                        <div class="col-lg-7">
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                                <input type="text" id="vantagemSearch" class="form-control" placeholder="Buscar por título, empresa ou descrição">
+                                            </div>
                                         </div>
-                                        <button type="submit" class="btn btn-primary btn-lg">Resgatar</button>
-                                    </form>
-                                    <div id="resgatarMessage" class="mt-3"></div>
+                                        <div class="col-lg-5 text-lg-end">
+                                            <button type="button" id="atualizarVantagensBtn" class="btn btn-outline-primary">
+                                                <i class="fas fa-sync-alt me-1"></i> Atualizar lista
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div id="resgatarMessage" class="mb-3"></div>
+                                    <div id="vantagensLista" class="row g-3">
+                                        <!-- Lista dinâmica de vantagens -->
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -471,6 +513,9 @@
 <script>
     const API_BASE = 'http://localhost:8080';
     const token = localStorage.getItem('token');
+    let vantagensDisponiveis = [];
+    const vantagemSearchInput = document.getElementById('vantagemSearch');
+    const vantagensLista = document.getElementById('vantagensLista');
 
     if (!token) window.location.href = 'login.html';
 
@@ -499,7 +544,13 @@
 
         // Carregar dados específicos de cada aba
         if (tabName === 'historico') {
-            carregarHistorico();
+            carregarHistoricoMovimentacoes();
+            carregarHistoricoVantagens();
+        }
+        if (tabName === 'vantagens') {
+            carregarVantagens();
+            const msgDiv = document.getElementById('resgatarMessage');
+            if (msgDiv) msgDiv.innerHTML = '';
         }
     }
 
@@ -560,127 +611,295 @@
         }
     }
 
-    // Carregar histórico de transações: obtém o perfil para pegar o id do aluno e chama
-    // /transacoes/aluno/{id}/historico. O backend atual pode retornar formatos diferentes
-    // (lista de transações, uma única transação ou objeto de saldo) — tratamos todos.
-    async function carregarHistorico() {
+    function formatarDataHora(dataString) {
+        if (!dataString) return 'Data indisponível';
+        const data = new Date(dataString);
+        if (Number.isNaN(data.getTime())) return dataString;
+        return data.toLocaleString('pt-BR');
+    }
+
+    async function carregarHistoricoMovimentacoes() {
+        const container = document.getElementById('historicoMovimentacoes');
+        if (!container) return;
+        container.innerHTML = '<p>Carregando histórico...</p>';
+
         try {
-            // pega perfil para obter o id do aluno
             const perfilRes = await fetch(`${API_BASE}/alunos/perfil`, { headers: setAuthHeaders() });
             if (!perfilRes.ok) throw new Error('Erro ao buscar perfil');
             const perfil = await perfilRes.json();
             const alunoId = perfil?.id;
             if (!alunoId) throw new Error('Aluno não encontrado');
 
-            const res = await fetch(`${API_BASE}/alunos/${alunoId}/transacoes`, { headers: setAuthHeaders() });
-            if (!res.ok) throw new Error('Erro ao buscar histórico');
-            const data = await res.json();
-            const div = document.getElementById('historicoTransacoes');
-            div.innerHTML = '';
+            const [transacoesRes, resgatesRes] = await Promise.all([
+                fetch(`${API_BASE}/alunos/${alunoId}/transacoes`, { headers: setAuthHeaders() }),
+                fetch(`${API_BASE}/vantagens/resgates`, { headers: setAuthHeaders() })
+            ]);
 
-            // Se o backend retornar vazio, mostramos mensagem clara
-            if (!data || !data.length) {
-                div.innerHTML = '<p>Nenhuma transação encontrada.</p>';
+            const transacoes = transacoesRes.ok ? await transacoesRes.json() : [];
+            const resgates = resgatesRes.ok ? await resgatesRes.json() : [];
+
+            const eventos = [];
+
+            transacoes.forEach(t => {
+                eventos.push({
+                    tipo: 'Recebido',
+                    origem: t.professor?.nome || t.professorNome || t.professor_name || t.professorName || 'Professor',
+                    origemTipo: 'Professor',
+                    quantidade: t.quantidade || 0,
+                    descricao: t.mensagem || 'Moedas recebidas',
+                    data: t.criadoEm
+                });
+            });
+
+            resgates.forEach(r => {
+                eventos.push({
+                    tipo: 'Resgate',
+                    origem: r.empresa || r.empresaNome || r.vantagem?.empresa?.nome || 'Empresa parceira',
+                    origemTipo: 'Empresa',
+                    quantidade: -(r.custoMoedas || 0),
+                    descricao: r.titulo || r.descricao || 'Vantagem resgatada',
+                    data: r.resgatadoEm
+                });
+            });
+
+            if (!eventos.length) {
+                container.innerHTML = '<p>Você ainda não possui movimentações.</p>';
                 return;
             }
 
-            // Ordenar transações por data (mais recentes primeiro)
-            data.sort((a, b) => new Date(b.criadoEm) - new Date(a.criadoEm));
+            eventos.sort((a, b) => new Date(b.data) - new Date(a.data));
 
-            // Criar tabela para exibir transações
             const table = document.createElement('table');
             table.className = 'table table-striped';
             table.innerHTML = `
                 <thead>
                     <tr>
-                        <th>Professor</th>
+                        <th>Tipo</th>
+                        <th>Origem</th>
                         <th>Quantidade</th>
-                        <th>Mensagem</th>
+                        <th>Descrição</th>
                         <th>Data</th>
                     </tr>
                 </thead>
-                <tbody>
-                </tbody>
+                <tbody></tbody>
             `;
-            
+
             const tbody = table.querySelector('tbody');
-            data.forEach(t => {
+            eventos.forEach(evento => {
                 const tr = document.createElement('tr');
-                const dataFormatada = t.criadoEm ? new Date(t.criadoEm).toLocaleString('pt-BR') : 'Data indisponível';
-                const nomeProfessor = t.professor?.nome || 'Professor';
+                const quantidadeFormatada = evento.quantidade >= 0
+                    ? `+ ${evento.quantidade} moedas`
+                    : `- ${Math.abs(evento.quantidade)} moedas`;
+
                 tr.innerHTML = `
-                    <td>${nomeProfessor}</td>
-                    <td>${t.quantidade || 0} moedas</td>
-                    <td>${t.mensagem || 'Sem mensagem'}</td>
-                    <td>${dataFormatada}</td>
+                    <td>${evento.tipo}</td>
+                    <td>${evento.origem}</td>
+                    <td class="${evento.quantidade >= 0 ? 'text-success' : 'text-danger'}">${quantidadeFormatada}</td>
+                    <td>${evento.descricao}</td>
+                    <td>${formatarDataHora(evento.data)}</td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            div.appendChild(table);
-            // Se nenhuma transação for encontrada
-            div.innerHTML = '<p>Nenhum histórico disponível.</p>';
+            container.innerHTML = '';
+            container.appendChild(table);
         } catch (error) {
             console.error(error);
-            document.getElementById('historicoTransacoes').innerHTML = '<p class="text-danger">Erro ao carregar histórico.</p>';
+            container.innerHTML = '<p class="text-danger">Erro ao carregar histórico.</p>';
         }
     }
 
-    async function carregarVantagens() {
-    try {
-        const vantagensRes = await fetch(`${API_BASE}/vantagens/listar`, { headers: setAuthHeaders() });
-        if (!vantagensRes.ok) throw new Error('Erro ao buscar vantagens');
-        const vantagensData = await vantagensRes.json();
-        const select = document.getElementById('vantagemSelect');
-        select.innerHTML = `<option value="">Selecione uma vantagem</option>`;
+    async function carregarHistoricoVantagens() {
+        const container = document.getElementById('historicoVantagens');
+        if (!container) return;
+        container.innerHTML = '<p>Carregando histórico...</p>';
 
-        if (vantagensData.length === 0) {
-            const opt = document.createElement('option');
-            opt.textContent = 'Nenhuma vantagem disponível no momento';
-            opt.disabled = true;
-            select.appendChild(opt);
+        try {
+            const res = await fetch(`${API_BASE}/vantagens/resgates`, { headers: setAuthHeaders() });
+            if (!res.ok) throw new Error('Erro ao buscar histórico de vantagens');
+            const data = await res.json();
+
+            if (!data || !data.length) {
+                container.innerHTML = '<p>Você ainda não resgatou nenhuma vantagem.</p>';
+                return;
+            }
+
+            const table = document.createElement('table');
+            table.className = 'table table-striped';
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Vantagem</th>
+                        <th>Empresa</th>
+                        <th>Custo</th>
+                        <th>Resgatado em</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            `;
+
+            const tbody = table.querySelector('tbody');
+            data.forEach(resgate => {
+                const empresaNome = resgate.empresa || resgate.empresaNome || resgate.vantagem?.empresa?.nome || 'Empresa parceira';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${resgate.titulo || 'Vantagem'}</td>
+                    <td>${empresaNome}</td>
+                    <td>${resgate.custoMoedas || 0} moedas</td>
+                    <td>${formatarDataHora(resgate.resgatadoEm)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            container.innerHTML = '';
+            container.appendChild(table);
+        } catch (error) {
+            console.error(error);
+            container.innerHTML = '<p class="text-danger">Erro ao carregar histórico de vantagens.</p>';
+        }
+    }
+
+    function escapeHtml(str = '') {
+        const value = (str === null || str === undefined) ? '' : String(str);
+        return value.replace(/[&<>"']/g, match => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[match]));
+    }
+
+    function filtrarVantagens(termo = '') {
+        const normalized = termo.trim().toLowerCase();
+        if (!normalized) return [...vantagensDisponiveis];
+        return vantagensDisponiveis.filter(v => {
+            const alvo = `${v.titulo || ''} ${v.descricao || ''} ${(v.empresa?.nomeFantasia || v.empresa?.nome || '')}`.toLowerCase();
+            return alvo.includes(normalized);
+        });
+    }
+
+    function renderVantagens(lista = []) {
+        if (!vantagensLista) return;
+        vantagensLista.innerHTML = '';
+
+        if (!lista.length) {
+            vantagensLista.innerHTML = '<p class="empty-message w-100">Nenhuma vantagem disponível no momento.</p>';
             return;
         }
 
-        vantagensData.forEach(v => {
-            const opt = document.createElement('option');
-            opt.value = v.id;
-            opt.textContent = `${v.titulo} — ${v.custoMoedas} moedas`;
-            select.appendChild(opt);
+        lista.forEach(v => {
+            const titulo = escapeHtml(v.titulo || 'Vantagem sem título');
+            const descricao = escapeHtml(v.descricao || 'Sem descrição disponível.');
+            const empresaNome = escapeHtml(v.empresa?.nomeFantasia || v.empresa?.nome || 'Empresa parceira');
+            const custo = `${v.custoMoedas || 0} moedas`;
+
+            const col = document.createElement('div');
+            col.className = 'col-md-6 col-lg-4';
+            col.innerHTML = `
+                <div class="card vantagem-card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">${titulo}</h5>
+                        <p class="mb-2">${descricao}</p>
+                        <p class="small mb-3"><i class="fas fa-building me-1"></i>${empresaNome}</p>
+                        <div class="mt-auto d-flex justify-content-between align-items-center">
+                            <span class="badge text-white">${custo}</span>
+                            <button class="btn btn-sm btn-primary" data-vantagem-id="${v.id}">
+                                <i class="fas fa-exchange-alt me-1"></i>Trocar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            vantagensLista.appendChild(col);
         });
-    } catch (error) {
-        console.error(error);
-        showMessage('Erro ao carregar vantagens.', 'error');
     }
-}
 
-// Resgatar vantagem
-document.getElementById('resgatarForm').addEventListener('submit', async e => {
-    e.preventDefault();
-    const vantagemId = document.getElementById('vantagemSelect').value;
-    if (!vantagemId) return showMessage('Selecione uma vantagem', 'error');
-
-    try {
-        const res = await fetch(`${API_BASE}/vantagens/trocar/${vantagemId}`, {
-            method: 'POST',
-            headers: setAuthHeaders()
-        });
-        
-        if (res.ok) {
-            showMessage('🎉 Vantagem resgatada com sucesso!', 'success');
-            carregarSaldo();
-            carregarHistorico();
-            carregarVantagens();
-        } else {
-            const data = await res.json().catch(() => ({}));
-            showMessage(data.message || 'Não foi possível resgatar esta vantagem.', 'error');
+    async function carregarVantagens(showLoader = true) {
+        if (!vantagensLista) return;
+        if (showLoader) {
+            vantagensLista.innerHTML = '<p class="empty-message w-100">Carregando vantagens...</p>';
         }
-    } catch (error) {
-        console.error(error);
-        showMessage('Erro de conexão ao tentar resgatar.', 'error');
+        try {
+            const vantagensRes = await fetch(`${API_BASE}/vantagens/listar`, {
+                headers: setAuthHeaders()
+            });
+            if (!vantagensRes.ok) throw new Error('Erro ao buscar vantagens');
+
+            vantagensDisponiveis = await vantagensRes.json() || [];
+            const termo = vantagemSearchInput?.value || '';
+            renderVantagens(filtrarVantagens(termo));
+        } catch (error) {
+            console.error(error);
+            if (vantagensLista) {
+                vantagensLista.innerHTML = '<p class="text-danger w-100">Erro ao carregar vantagens.</p>';
+            }
+            showMessage('Erro ao carregar vantagens.', 'error');
+        }
     }
-});
-        
+
+    async function trocarVantagem(vantagemId, triggerBtn) {
+        if (!vantagemId) {
+            showMessage('Selecione uma vantagem válida.', 'error');
+            return;
+        }
+
+        const button = triggerBtn || null;
+        const originalContent = button ? button.innerHTML : '';
+        if (button) {
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Resgatando';
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/vantagens/trocar/${vantagemId}`, {
+                method: 'POST',
+                headers: setAuthHeaders()
+            });
+
+            if (res.ok) {
+                showMessage('🎉 Vantagem resgatada com sucesso!', 'success');
+                await Promise.all([
+                    carregarSaldo(),
+                    carregarHistoricoMovimentacoes(),
+                    carregarHistoricoVantagens(),
+                    carregarVantagens(false)
+                ]);
+            } else {
+                const data = await res.json().catch(() => ({}));
+                showMessage(data.message || data.error || 'Não foi possível resgatar esta vantagem.', 'error');
+            }
+        } catch (error) {
+            console.error(error);
+            showMessage('Erro de conexão ao tentar resgatar.', 'error');
+        } finally {
+            if (button) {
+                button.disabled = false;
+                button.innerHTML = originalContent;
+            }
+        }
+    }
+
+    if (vantagemSearchInput) {
+        vantagemSearchInput.addEventListener('input', event => {
+            const termo = event.target.value || '';
+            renderVantagens(filtrarVantagens(termo));
+        });
+    }
+
+    const atualizarVantagensBtn = document.getElementById('atualizarVantagensBtn');
+    if (atualizarVantagensBtn) {
+        atualizarVantagensBtn.addEventListener('click', () => carregarVantagens());
+    }
+
+    if (vantagensLista) {
+        vantagensLista.addEventListener('click', event => {
+            const button = event.target.closest('[data-vantagem-id]');
+            if (!button) return;
+            trocarVantagem(button.dataset.vantagemId, button);
+        });
+    }
+
     // Carregar dados do perfil na aba "Conta"
     async function carregarPerfil() {
         try {
@@ -742,33 +961,6 @@ document.getElementById('resgatarForm').addEventListener('submit', async e => {
         }
     });
 
-    // Resgatar vantagem
-    document.getElementById('resgatarForm').addEventListener('submit', async e => {
-        e.preventDefault();
-        const vantagemId = document.getElementById('vantagemSelect').value;
-        if (!vantagemId) return showMessage('Selecione uma vantagem', 'error');
-
-        try {
-            const res = await fetch(`${API_BASE}/alunos/resgatar/${vantagemId}`, {
-                method: 'POST',
-                headers: setAuthHeaders()
-            });
-            
-            if (res.ok) {
-                showMessage('Vantagem resgatada com sucesso!', 'success');
-                carregarSaldo();
-                carregarHistorico();
-                document.getElementById('vantagemSelect').value = ''; // Reseta o select
-            } else {
-                const data = await res.json();
-                showMessage(data.error || 'Erro ao resgatar', 'error');
-            }
-        } catch (error) {
-            console.error(error);
-             showMessage('Erro de conexão ao resgatar.', 'error');
-        }
-    });
-
     // Excluir conta do aluno
     document.getElementById('deleteAccountBtn').addEventListener('click', async () => {
         const id = document.getElementById('matricula').value;
@@ -806,7 +998,8 @@ document.getElementById('resgatarForm').addEventListener('submit', async e => {
     // Inicialização (carrega tudo ao abrir a página)
     document.addEventListener('DOMContentLoaded', () => {
         carregarSaldo();
-        carregarHistorico();
+        carregarHistoricoMovimentacoes();
+        carregarHistoricoVantagens();
         carregarVantagens();
         carregarPerfil();
     });
