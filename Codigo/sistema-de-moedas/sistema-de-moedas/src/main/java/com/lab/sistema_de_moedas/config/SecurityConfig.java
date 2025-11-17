@@ -50,6 +50,7 @@ public class SecurityConfig {
                 .requestMatchers("/transacoes/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/transacoes/aluno/**").permitAll()
                 .requestMatchers("/vantagens/**").permitAll()
+                .requestMatchers("vantagens/listar").permitAll()
 
                 .requestMatchers("/alunos/historico").permitAll()
                 // Tudo o resto exige autenticação
@@ -63,20 +64,27 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // 🔹 Defina explicitamente as origens permitidas
+        
+        // 🔹 Permite suas origens de front-end
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5500",
                 "http://127.0.0.1:5500"
         ));
-        // 🔹 Métodos HTTP liberados
+        
+        // 🔹 Métodos HTTP liberados, incluindo OPTIONS para preflight
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        // 🔹 Cabeçalhos e cookies
-        configuration.setAllowedHeaders(List.of("*"));
+        
+        // 🔹 Permite todos os headers, incluindo Authorization
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+        
+        // 🔹 Permite cookies se necessário
         configuration.setAllowCredentials(true);
 
+        // 🔹 Configura URLs
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
     }
+
 }

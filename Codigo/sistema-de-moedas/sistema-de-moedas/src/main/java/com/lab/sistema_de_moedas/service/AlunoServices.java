@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.lab.sistema_de_moedas.model.Aluno;
+import com.lab.sistema_de_moedas.model.AlunoBalance;
 import com.lab.sistema_de_moedas.model.Transacao;
+import com.lab.sistema_de_moedas.repository.AlunoBalanceRepository;
 import com.lab.sistema_de_moedas.repository.AlunoRepositories;
 
 import java.util.List;
@@ -18,6 +20,9 @@ public class AlunoServices {
     
     @Autowired
     private AlunoRepositories alunoRepositories;
+
+    @Autowired
+    private AlunoBalanceRepository alunoBalanceRepository;
 
     AlunoServices(TransacaoRepository transacaoRepository) {
         this.transacaoRepository = transacaoRepository;
@@ -119,5 +124,10 @@ public class AlunoServices {
         // Busca todas as transações desse aluno
         List<Transacao> transacoes = transacaoRepository.findAllByAlunoId(aluno.getId());
         return transacoes;
+    }
+
+     public AlunoBalance buscarBalancePorAluno(Long alunoId) {
+        return alunoBalanceRepository.findByAlunoId(alunoId)
+                .orElseThrow(() -> new RuntimeException("Saldo do aluno não encontrado"));
     }
 }

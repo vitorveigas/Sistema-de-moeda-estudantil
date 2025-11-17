@@ -1,6 +1,7 @@
 package com.lab.sistema_de_moedas.controller;
 
 import com.lab.sistema_de_moedas.model.Aluno;
+import com.lab.sistema_de_moedas.model.AlunoBalance;
 import com.lab.sistema_de_moedas.model.Transacao;
 import com.lab.sistema_de_moedas.model.Vantagem;
 import com.lab.sistema_de_moedas.service.AlunoServices;
@@ -64,31 +65,45 @@ public class VantagemController {
     }
 
     // ✅ Caso de uso 3 — Aluno troca vantagem (usa JWT)
-    @PostMapping("/trocar/{vantagemId}")
-    public ResponseEntity<?> trocarVantagem(
-            @PathVariable Long vantagemId,
-            @RequestHeader("Authorization") String authHeader) {
-        try {
-            // Extrai o e-mail do aluno a partir do token JWT
-            String token = authHeader.replace("Bearer ", "");
-            String email = jwtService.extractUsername(token);
-            Aluno aluno = alunoServices.buscarAlunoPorEmail(email);
+   @PostMapping("/trocar/{vantagemId}")
+public ResponseEntity<?> trocarVantagem(
+        @PathVariable Long vantagemId,
+        @RequestHeader("Authorization") String authHeader) {
+    try {
+        // Extrai o e-mail do aluno a partir do token JWT
+        String token = authHeader.replace("Bearer ", "");
+        String email = jwtService.extractUsername(token);
 
-            // Busca a vantagem
-            Vantagem vantagem = vantagemService.buscarPorId(vantagemId);
+        // Busca o aluno
+        Aluno aluno = alunoServices.buscarAlunoPorEmail(email);
 
-            // Realiza a troca e gera a transação
-            Transacao transacao = vantagemService.trocarVantagem(aluno, vantagem);
-
-            return ResponseEntity.ok(transacao);
-
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Erro interno ao realizar a troca.");
+        // Busca o saldo do aluno
+        AlunoBalance alunoBalance = alunoServices.buscarBalancePorAluno(aluno.getId());
+        if (alunoBalance == null) {
+            return ResponseEntity.badRequest().body("Saldo do aluno não encontrado");
         }
+
+        // Busca a vantagem
+        Vantagem vantagem = vantagemService.buscarPorId(vantagemId);
+
+        // Verifica se o aluno tem saldo suficiente
+        if (alunoBalance.getBalance() < vantagem.getCustoMoedas()) {
+            return ResponseEntity.badRequest().body("Saldo insuficiente para trocar esta vantagem");
+        }
+
+        // Realiza a troca usando o service
+        Transacao transacao = vantagemService.trocarVantagem(alunoBalance, vantagem);
+
+        return ResponseEntity.ok(transacao);
+
+    } catch (IllegalArgumentException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(500).body("Erro interno ao realizar a troca.");
     }
+}
+
 
     @Data
     public static class VantagemRequest {

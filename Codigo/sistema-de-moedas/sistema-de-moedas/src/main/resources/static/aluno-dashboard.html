@@ -626,90 +626,61 @@
         }
     }
 
-    // Carregar vantagens disponíveis
     async function carregarVantagens() {
-        /*
-        try {
-            const vantagensRes = await fetch(`${API_BASE}/vantagens`, { headers: setAuthHeaders() });
-            if (!vantagensRes.ok) throw new Error('Erro ao buscar vantagens');
-            const vantagensData = await vantagensRes.json();
-            const select = document.getElementById('vantagemSelect');
-            select.innerHTML = `<option value="">Selecione uma vantagem</option>`;
-            vantagensData.forEach(v => {
-                const opt = document.createElement('option');
-                opt.value = v.id;
-                opt.textContent = `${v.nome} - ${v.custo} moedas`;
-                select.appendChild(opt);
-            });
-        } catch (error) {
-            console.error(error);
-        }
-        TRECHO ANTIGO 
-        */
+    try {
+        const vantagensRes = await fetch(`${API_BASE}/vantagens/listar`, { headers: setAuthHeaders() });
+        if (!vantagensRes.ok) throw new Error('Erro ao buscar vantagens');
+        const vantagensData = await vantagensRes.json();
+        const select = document.getElementById('vantagemSelect');
+        select.innerHTML = `<option value="">Selecione uma vantagem</option>`;
 
-        async function carregarVantagens() {
-        try {
-            const vantagensRes = await fetch(`${API_BASE}/vantagens/listar`, {
-                headers: setAuthHeaders()
-            });
-            if (!vantagensRes.ok) throw new Error('Erro ao buscar vantagens');
-
-            const vantagensData = await vantagensRes.json();
-            const select = document.getElementById('vantagemSelect');
-            select.innerHTML = `<option value="">Selecione uma vantagem</option>`;
-
-            if (vantagensData.length === 0) {
-                const opt = document.createElement('option');
-                opt.textContent = 'Nenhuma vantagem disponível no momento';
-                opt.disabled = true;
-                select.appendChild(opt);
-                return;
-            }
-
-            vantagensData.forEach(v => {
-                const opt = document.createElement('option');
-                opt.value = v.id;
-                opt.textContent = `${v.titulo} — ${v.custoMoedas} moedas`;
-                select.appendChild(opt);
-            });
-        } catch (error) {
-            console.error(error);
-            showMessage('Erro ao carregar vantagens.', 'error');
-        }
-    }
-
-    // Resgatar vantagem (trocar moedas)
-    document.getElementById('resgatarForm').addEventListener('submit', async e => {
-        e.preventDefault();
-        const vantagemId = document.getElementById('vantagemSelect').value;
-        if (!vantagemId) {
-            showMessage('Selecione uma vantagem para resgatar.', 'error');
+        if (vantagensData.length === 0) {
+            const opt = document.createElement('option');
+            opt.textContent = 'Nenhuma vantagem disponível no momento';
+            opt.disabled = true;
+            select.appendChild(opt);
             return;
         }
 
-        try {
-            const res = await fetch(`${API_BASE}/vantagens/trocar/${vantagemId}`, {
-                method: 'POST',
-                headers: setAuthHeaders()
-            });
-
-            if (res.ok) {
-                showMessage('🎉 Vantagem resgatada com sucesso!', 'success');
-                carregarSaldo();
-                carregarHistorico();
-                document.getElementById('vantagemSelect').value = '';
-            } else {
-                const data = await res.json().catch(() => ({}));
-                showMessage(data.message || 'Não foi possível resgatar esta vantagem.', 'error');
-            }
-        } catch (error) {
-            console.error(error);
-            showMessage('Erro de conexão ao tentar resgatar.', 'error');
-        }
-    });
-    
+        vantagensData.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v.id;
+            opt.textContent = `${v.titulo} — ${v.custoMoedas} moedas`;
+            select.appendChild(opt);
+        });
+    } catch (error) {
+        console.error(error);
+        showMessage('Erro ao carregar vantagens.', 'error');
     }
+}
 
+// Resgatar vantagem
+document.getElementById('resgatarForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const vantagemId = document.getElementById('vantagemSelect').value;
+    if (!vantagemId) return showMessage('Selecione uma vantagem', 'error');
+
+    try {
+        const res = await fetch(`${API_BASE}/vantagens/trocar/${vantagemId}`, {
+            method: 'POST',
+            headers: setAuthHeaders()
+        });
+        
+        if (res.ok) {
+            showMessage('🎉 Vantagem resgatada com sucesso!', 'success');
+            carregarSaldo();
+            carregarHistorico();
+            carregarVantagens();
+        } else {
+            const data = await res.json().catch(() => ({}));
+            showMessage(data.message || 'Não foi possível resgatar esta vantagem.', 'error');
+        }
+    } catch (error) {
+        console.error(error);
+        showMessage('Erro de conexão ao tentar resgatar.', 'error');
+    }
+});
+        
     // Carregar dados do perfil na aba "Conta"
     async function carregarPerfil() {
         try {

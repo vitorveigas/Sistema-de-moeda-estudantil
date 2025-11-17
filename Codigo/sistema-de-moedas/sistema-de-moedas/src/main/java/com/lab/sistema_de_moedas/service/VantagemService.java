@@ -1,37 +1,39 @@
 package com.lab.sistema_de_moedas.service;
 
-import com.lab.sistema_de_moedas.model.Aluno;
+import com.lab.sistema_de_moedas.model.AlunoBalance;
 import com.lab.sistema_de_moedas.model.Empresa;
 import com.lab.sistema_de_moedas.model.Transacao;
 import com.lab.sistema_de_moedas.model.Vantagem;
+import com.lab.sistema_de_moedas.repository.AlunoBalanceRepository;
 import com.lab.sistema_de_moedas.repository.EmpresaRepositories;
+import com.lab.sistema_de_moedas.repository.TransacaoRepository;
 import com.lab.sistema_de_moedas.repository.VantagemRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Service
 public class VantagemService {
 
     private final VantagemRepository vantagemRepository;
+    private final AlunoBalanceRepository alunoBalanceRepository;
+    private final TransacaoRepository transacaoRepository;
     private final EmpresaRepositories empresaRepository;
-    private final AlunoServices alunoServices;
-    private final TransacaoService transacaoService;
 
-    // ✅ Corrigido: construtor injeta corretamente os serviços necessários
+    // Construtor injeta todos os repositórios necessários
     public VantagemService(
             VantagemRepository vantagemRepository,
-            EmpresaRepositories empresaRepository,
-            AlunoServices alunoServices,
-            TransacaoService transacaoService) {
-
+            AlunoBalanceRepository alunoBalanceRepository,
+            TransacaoRepository transacaoRepository,
+            EmpresaRepositories empresaRepository) {
         this.vantagemRepository = vantagemRepository;
+        this.alunoBalanceRepository = alunoBalanceRepository;
+        this.transacaoRepository = transacaoRepository;
         this.empresaRepository = empresaRepository;
-        this.alunoServices = alunoServices;
-        this.transacaoService = transacaoService;
     }
 
+    // Cadastra vantagem vinculada a empresa
     public Vantagem cadastrarVantagem(Long empresaId, Vantagem vantagem) {
         if (empresaId == null) {
             throw new IllegalArgumentException("O ID da empresa não pode ser nulo!");
@@ -44,41 +46,45 @@ public class VantagemService {
         return vantagemRepository.save(vantagem);
     }
 
+    // Lista todas as vantagens
     public List<Vantagem> listarTodasVantagens() {
         return vantagemRepository.findAll();
     }
 
+    // Lista vantagens de uma empresa específica
     public List<Vantagem> listarPorEmpresa(Long empresaId) {
         return vantagemRepository.findByEmpresaId(empresaId);
     }
 
-    // ✅ Busca vantagem por ID
+    // Busca vantagem por ID
     public Vantagem buscarPorId(Long id) {
         return vantagemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Vantagem não encontrada!"));
     }
 
-    // ✅ Troca de vantagem (aluno gasta moedas)
-    public Transacao trocarVantagem(Aluno aluno, Vantagem vantagem) {
-        if (aluno == null) throw new IllegalArgumentException("Aluno não encontrado");
-        if (vantagem == null) throw new IllegalArgumentException("Vantagem inválida");
-
-        // Verifica saldo
-        if (aluno.getSaldoMoedas() < vantagem.getCustoMoedas()) {
-            throw new IllegalArgumentException("Saldo insuficiente para trocar por esta vantagem!");
+    public Transacao trocarVantagem(AlunoBalance alunoBalance, Vantagem vantagem) {
+        if (alunoBalance == null) {
+            throw new IllegalArgumentException("Saldo do aluno não encontrado");
         }
 
-        // Deduz o custo da vantagem
-        aluno.setSaldoMoedas(aluno.getSaldoMoedas() - vantagem.getCustoMoedas());
-        alunoServices.salvarAluno(aluno);
+        if (alunoBalance.getBalance() < vantagem.getCustoMoedas()) {
+            throw new IllegalArgumentException("Saldo insuficiente para trocar esta vantagem");
+        }
 
-        // Cria e salva a transação
-        Transacao transacao = new Transacao();
-        transacao.setAluno(aluno);
-        transacao.setDescricao("Troca pela vantagem: " + vantagem.getTitulo());
-        transacao.setValor(-vantagem.getCustoMoedas());
-        transacao.setData(LocalDateTime.now());
+        // Atualiza o saldo do aluno
+        alunoBalance.setBalance(alunoBalance.getBalance() - vantagem.getCustoMoedas());
+        alunoBalanceRepository.save(alunoBalance);
 
-        return transacaoService.salvarTransacao(transacao);
+        // Cria a transação de acordo com a model
+        Transacao transacao = Transacao.builder()
+                .professor(null) // ou pode criar um professor "sistema" se desejar
+                .aluno(alunoBalance.getAluno())
+                .quantidade((long) -vantagem.getCustoMoedas())
+                .mensagem("Aluno trocou " + vantagem.getCustoMoedas() + " moedas pela vantagem '" + vantagem.getTitulo() + "'")
+                .criadoEm(Instant.now())
+                .build();
+
+        return transacaoRepository.save(transacao);
     }
+
 }
