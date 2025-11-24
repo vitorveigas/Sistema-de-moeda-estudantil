@@ -118,6 +118,14 @@
         .logout-btn:hover {
             background: #c73e30;
         }
+        .vantagem-card img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-top-left-radius: 0.35rem;
+        border-top-right-radius: 0.35rem;
+    }
+
 
         /* 3. Conteúdo da Página */
         .container-fluid {
@@ -519,6 +527,8 @@
     let vantagensDisponiveis = [];
     const vantagemSearchInput = document.getElementById('vantagemSearch');
     const vantagensLista = document.getElementById('vantagensLista');
+    
+    emailjs.init('f5FkYa1QVg9rO_OHK');
 
     emailjs.init('f5FkYa1QVg9rO_OHK');
 
@@ -784,73 +794,47 @@
         });
     }
 
-    function renderVantagens(lista = []) {
-        if (!vantagensLista) return;
-        vantagensLista.innerHTML = '';
-
-        if (!lista.length) {
-            vantagensLista.innerHTML = '<p class="empty-message w-100">Nenhuma vantagem disponível no momento.</p>';
-            return;
-        }
-
-        lista.forEach(v => {
-            const titulo = escapeHtml(v.titulo || 'Vantagem sem título');
-            const descricao = escapeHtml(v.descricao || 'Sem descrição disponível.');
-            const empresaNome = escapeHtml(v.empresa?.nomeFantasia || v.empresa?.nome || 'Empresa parceira');
-            const custo = `${v.custoMoedas || 0} moedas`;
-
-            const col = document.createElement('div');
-            col.className = 'col-md-6 col-lg-4';
-            col.innerHTML = `
-                <div class="card vantagem-card h-100">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">${titulo}</h5>
-                        <p class="mb-2">${descricao}</p>
-                        <p class="small mb-3"><i class="fas fa-building me-1"></i>${empresaNome}</p>
-                        <div class="mt-auto d-flex justify-content-between align-items-center">
-                            <span class="badge text-white">${custo}</span>
-                            <button class="btn btn-sm btn-primary" data-vantagem-id="${v.id}">
-                                <i class="fas fa-exchange-alt me-1"></i>Trocar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            vantagensLista.appendChild(col);
+    // ================================
+//  LISTAR VANTAGENS COM IMAGEM
+// ================================
+async function carregarVantagens() {
+    try {
+        const response = await fetch(`${API_BASE}/vantagens/listar`, {
+            headers: setAuthHeaders()
         });
-    }
 
-    async function carregarVantagens(showLoader = true) {
-        if (!vantagensLista) return;
-        if (showLoader) {
-            vantagensLista.innerHTML = '<p class="empty-message w-100">Carregando vantagens...</p>';
+        if (!response.ok) {
+            throw new Error("Erro ao carregar vantagens");
         }
-        try {
-            const vantagensRes = await fetch(`${API_BASE}/vantagens/listar`, {
-                headers: setAuthHeaders()
-            });
-            if (!vantagensRes.ok) throw new Error('Erro ao buscar vantagens');
 
-            vantagensDisponiveis = await vantagensRes.json() || [];
-            const termo = vantagemSearchInput?.value || '';
-            renderVantagens(filtrarVantagens(termo));
-        } catch (error) {
-            console.error(error);
-            if (vantagensLista) {
-                vantagensLista.innerHTML = '<p class="text-danger w-100">Erro ao carregar vantagens.</p>';
-            }
-            showMessage('Erro ao carregar vantagens.', 'error');
-        }
+        vantagensDisponiveis = await response.json();
+
+        renderizarVantagens(vantagensDisponiveis);
+
+    } catch (error) {
+        console.error(error);
+        showMessage("Erro ao carregar vantagens.", "danger");
     }
+}
 
-      async function trocarVantagem(vantagemId, triggerBtn) {
+
+// ================================
+//   RENDERIZAÇÃO DOS CARDS
+// ================================
+
+
+async function trocarVantagem(vantagemId, triggerBtn = null) {
     if (!vantagemId) {
         showMessage('Selecione uma vantagem válida.', 'error');
         return;
     }
 
-    const button = triggerBtn || null;
+    // ---------------------------------------
+    // 🔄 Estado do botão (loading)
+    // ---------------------------------------
+    const button = triggerBtn;
     const originalContent = button ? button.innerHTML : '';
+
     if (button) {
         button.disabled = true;
         button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Resgatando';
@@ -862,57 +846,60 @@
             headers: setAuthHeaders()
         });
 
-        if (res.ok) {
-            showMessage('🎉 Vantagem resgatada com sucesso!', 'success');
-
-            await Promise.all([
-                carregarSaldo(),
-                carregarHistoricoMovimentacoes(),
-                carregarHistoricoVantagens(),
-                carregarVantagens(false)
-            ]);
-
-            // ----------------------------------------------------
-            // 🔥 Buscar nome e email do DOM SEM usar variáveis globais
-            // ----------------------------------------------------
-            const alunoNome = document.getElementById('name')?.value || null;
-            const alunoEmail = document.getElementById('email')?.value || null;
-
-            const vantagem = vantagensDisponiveis.find(v => v.id == vantagemId);
-
-            if (vantagem && alunoEmail && alunoNome) {
-
-                const templateParams = {
-                    to_name: alunoNome,
-                    to_email: alunoEmail,
-                    vantagem_titulo: vantagem.titulo || 'Vantagem',
-                    vantagem_descricao: vantagem.descricao || 'Sem descrição',
-                    empresa_nome: vantagem.empresa?.nomeFantasia || vantagem.empresa?.nome || 'Empresa parceira',
-                    custo: `${vantagem.custoMoedas || 0} moedas`,
-                    data_resgate: new Date().toLocaleString('pt-BR')
-                };
-
-                emailjs.send('service_eb33j38', 'template_0985ayl', templateParams)
-                    .then(() => {
-                        console.log('Email enviado com sucesso!');
-                    })
-                    .catch((error) => {
-                        console.error('Erro ao enviar email:', error);
-                        showMessage('Vantagem resgatada, mas houve erro ao enviar o email.', 'error');
-                    });
-
-            } else {
-                console.warn("⚠ Nome ou email não encontrados no DOM — email não enviado.");
-            }
-
-        } else {
+        if (!res.ok) {
             const data = await res.json().catch(() => ({}));
-            showMessage(data.message || data.error || 'Não foi possível resgatar esta vantagem.', 'error');
+            showMessage(data.message || 'Não foi possível resgatar esta vantagem.', 'error');
+            return;
         }
+
+        showMessage("🎉 Vantagem resgatada com sucesso!", "success");
+
+        // ---------------------------------------
+        // 🔄 Atualizações após resgate
+        // ---------------------------------------
+        await Promise.all([
+            carregarSaldo(),
+            carregarHistoricoMovimentacoes?.(),
+            carregarHistoricoVantagens(),
+            carregarVantagens(false)
+        ]);
+
+        // ---------------------------------------
+        // 🔥 Enviar Email (se houver nome e email)
+        // ---------------------------------------
+        const alunoNome  = document.getElementById('name')?.value;
+        const alunoEmail = document.getElementById('email')?.value;
+
+        const vantagem = vantagensDisponiveis?.find(v => v.id == vantagemId);
+
+        if (alunoNome && alunoEmail && vantagem) {
+
+            const templateParams = {
+                to_name: alunoNome,
+                to_email: alunoEmail,
+                vantagem_titulo: vantagem.titulo,
+                vantagem_descricao: vantagem.descricao,
+                empresa_nome: vantagem.empresa?.nomeFantasia || vantagem.empresa?.nome || "Empresa parceira",
+                custo: `${vantagem.custoMoedas} moedas`,
+                data_resgate: new Date().toLocaleString('pt-BR')
+            };
+
+            emailjs.send('service_eb33j38', 'template_0985ayl', templateParams)
+                .then(() => console.log('Email enviado!'))
+                .catch((err) => {
+                    console.error(err);
+                    showMessage('Vantagem resgatada, mas erro ao enviar email.', 'error');
+                });
+        }
+
     } catch (error) {
         console.error(error);
-        showMessage('Erro de conexão ao tentar resgatar.', 'error');
+        showMessage("Erro inesperado ao resgatar vantagem!", "danger");
+
     } finally {
+        // ---------------------------------------
+        // 🔓 Restaurar botão
+        // ---------------------------------------
         if (button) {
             button.disabled = false;
             button.innerHTML = originalContent;
@@ -920,9 +907,55 @@
     }
 }
 
+function renderizarVantagens(lista) {
+    vantagensLista.innerHTML = "";
 
-     
+    if (!lista || lista.length === 0) {
+        vantagensLista.innerHTML = `
+            <p class="text-center text-muted">Nenhuma vantagem disponível.</p>
+        `;
+        return;
+    }
 
+    lista.forEach(v => {
+        const card = document.createElement("div");
+        card.className = "col-md-4";
+
+        // 📌 Prioridade da imagem:
+        // 1 - URL enviada pelo backend (v.img)
+        // 2 - Base64 (v.imagemBase64)
+        // 3 - Placeholder
+        const imagem = v.img
+            ? v.img
+            : (v.imagemBase64 
+                ? `data:image/jpeg;base64,${v.imagemBase64}`
+                : "https://via.placeholder.com/300x150?text=Sem+Imagem");
+
+        card.innerHTML = `
+            <div class="card vantagem-card shadow h-100">
+                <img src="${imagem}" class="card-img-top" alt="Imagem da vantagem">
+
+                <div class="card-body">
+                    <h5 class="card-title">${v.titulo}</h5>
+                    <p class="card-text">${v.descricao}</p>
+
+                    <span class="badge bg-primary">${v.custoMoedas} moedas</span>
+
+                    <button class="btn btn-success w-100 mt-2" onclick="trocarVantagem(${v.id})">
+                        Resgatar
+                    </button>
+                </div>
+            </div>
+        `;
+
+        vantagensLista.appendChild(card);
+    });
+}
+
+
+    
+
+    
     if (vantagemSearchInput) {
         vantagemSearchInput.addEventListener('input', event => {
             const termo = event.target.value || '';
