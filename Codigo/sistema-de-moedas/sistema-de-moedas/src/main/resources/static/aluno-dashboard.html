@@ -509,6 +509,9 @@
         </div>
     </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript"
+        src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+</script>
 
 <script>
     const API_BASE = 'http://localhost:8080';
@@ -516,6 +519,8 @@
     let vantagensDisponiveis = [];
     const vantagemSearchInput = document.getElementById('vantagemSearch');
     const vantagensLista = document.getElementById('vantagensLista');
+
+    emailjs.init('f5FkYa1QVg9rO_OHK');
 
     if (!token) window.location.href = 'login.html';
 
@@ -838,47 +843,85 @@
         }
     }
 
-    async function trocarVantagem(vantagemId, triggerBtn) {
-        if (!vantagemId) {
-            showMessage('Selecione uma vantagem válida.', 'error');
-            return;
-        }
+      async function trocarVantagem(vantagemId, triggerBtn) {
+    if (!vantagemId) {
+        showMessage('Selecione uma vantagem válida.', 'error');
+        return;
+    }
 
-        const button = triggerBtn || null;
-        const originalContent = button ? button.innerHTML : '';
-        if (button) {
-            button.disabled = true;
-            button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Resgatando';
-        }
+    const button = triggerBtn || null;
+    const originalContent = button ? button.innerHTML : '';
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Resgatando';
+    }
 
-        try {
-            const res = await fetch(`${API_BASE}/vantagens/trocar/${vantagemId}`, {
-                method: 'POST',
-                headers: setAuthHeaders()
-            });
+    try {
+        const res = await fetch(`${API_BASE}/vantagens/trocar/${vantagemId}`, {
+            method: 'POST',
+            headers: setAuthHeaders()
+        });
 
-            if (res.ok) {
-                showMessage('🎉 Vantagem resgatada com sucesso!', 'success');
-                await Promise.all([
-                    carregarSaldo(),
-                    carregarHistoricoMovimentacoes(),
-                    carregarHistoricoVantagens(),
-                    carregarVantagens(false)
-                ]);
+        if (res.ok) {
+            showMessage('🎉 Vantagem resgatada com sucesso!', 'success');
+
+            await Promise.all([
+                carregarSaldo(),
+                carregarHistoricoMovimentacoes(),
+                carregarHistoricoVantagens(),
+                carregarVantagens(false)
+            ]);
+
+            // ----------------------------------------------------
+            // 🔥 Buscar nome e email do DOM SEM usar variáveis globais
+            // ----------------------------------------------------
+            const alunoNome = document.getElementById('name')?.value || null;
+            const alunoEmail = document.getElementById('email')?.value || null;
+
+            const vantagem = vantagensDisponiveis.find(v => v.id == vantagemId);
+
+            if (vantagem && alunoEmail && alunoNome) {
+
+                const templateParams = {
+                    to_name: alunoNome,
+                    to_email: alunoEmail,
+                    vantagem_titulo: vantagem.titulo || 'Vantagem',
+                    vantagem_descricao: vantagem.descricao || 'Sem descrição',
+                    empresa_nome: vantagem.empresa?.nomeFantasia || vantagem.empresa?.nome || 'Empresa parceira',
+                    custo: `${vantagem.custoMoedas || 0} moedas`,
+                    data_resgate: new Date().toLocaleString('pt-BR')
+                };
+
+                emailjs.send('service_eb33j38', 'template_0985ayl', templateParams)
+                    .then(() => {
+                        console.log('Email enviado com sucesso!');
+                    })
+                    .catch((error) => {
+                        console.error('Erro ao enviar email:', error);
+                        showMessage('Vantagem resgatada, mas houve erro ao enviar o email.', 'error');
+                    });
+
             } else {
-                const data = await res.json().catch(() => ({}));
-                showMessage(data.message || data.error || 'Não foi possível resgatar esta vantagem.', 'error');
+                console.warn("⚠ Nome ou email não encontrados no DOM — email não enviado.");
             }
-        } catch (error) {
-            console.error(error);
-            showMessage('Erro de conexão ao tentar resgatar.', 'error');
-        } finally {
-            if (button) {
-                button.disabled = false;
-                button.innerHTML = originalContent;
-            }
+
+        } else {
+            const data = await res.json().catch(() => ({}));
+            showMessage(data.message || data.error || 'Não foi possível resgatar esta vantagem.', 'error');
+        }
+    } catch (error) {
+        console.error(error);
+        showMessage('Erro de conexão ao tentar resgatar.', 'error');
+    } finally {
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = originalContent;
         }
     }
+}
+
+
+     
 
     if (vantagemSearchInput) {
         vantagemSearchInput.addEventListener('input', event => {
