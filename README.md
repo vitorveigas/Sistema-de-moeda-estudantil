@@ -98,13 +98,7 @@ O sistema segue o padrão **MVC (Model-View-Controller)**, complementado com as 
 
 ---
 
-## Licença
 
-Este projeto está licenciado sob a [MIT License](./LICENSE).
-Você pode usar, modificar e distribuir este código, desde que os **devidos créditos sejam dados**, com link para o [original repository](https://github.com/vitorveigas/Sistema-de-moeda-estudantil/tree/main). 
-Este projeto foi desenvolvido por [Caue Afonso](https://github.com/caueafonsomoraes), [Thomás Ramos](https://github.com/Thomasramos02), [Vinícius Gomes](https://github.com/viniciusgomesrod) e [Vitor Veiga](https://github.com/vitorveigas).
-
----
 
 ## Como rodar o projeto (Windows)
 
@@ -157,3 +151,13 @@ Requisitos
 - Ajuste as propriedades (porta, usuário, senha) conforme necessário.
 - Se usar uma IDE (VSCode/IntelliJ), importe o projeto como Maven e rode a classe principal Spring Boot.
 - Logs e SQL aparecem conforme spring.jpa.show-sql
+
+---
+
+## Licença
+
+Este projeto está licenciado sob a [MIT License](./LICENSE).
+Você pode usar, modificar e distribuir este código, desde que os **devidos créditos sejam dados**, com link para o [original repository](https://github.com/vitorveigas/Sistema-de-moeda-estudantil/tree/main). 
+Este projeto foi desenvolvido por [Caue Afonso](https://github.com/caueafonsomoraes), [Thomás Ramos](https://github.com/Thomasramos02), [Vinícius Gomes](https://github.com/viniciusgomesrod) e [Vitor Veiga](https://github.com/vitorveigas).
+
+---
