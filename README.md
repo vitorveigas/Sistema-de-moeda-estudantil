@@ -115,8 +115,7 @@ Requisitos
     CREATE USER app_user WITH PASSWORD 'senha';
     GRANT ALL PRIVILEGES ON DATABASE moeda_estudantil TO app_user;
 
-- Alternativa com Docker (PowerShell/CMD):
-  docker run --name pg-moeda -e POSTGRES_DB=moeda_estudantil -e POSTGRES_USER=app_user -e POSTGRES_PASSWORD=senha -p 5432:5432 -d postgres:15
+
 
 2) Configurar propriedades de conexão
 - Edite src/main/resources/application.properties (ou defina variáveis de ambiente):
