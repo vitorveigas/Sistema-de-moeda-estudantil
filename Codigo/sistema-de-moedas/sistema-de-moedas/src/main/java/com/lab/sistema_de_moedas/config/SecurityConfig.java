@@ -50,7 +50,9 @@ public class SecurityConfig {
                 .requestMatchers("/transacoes/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/transacoes/aluno/**").permitAll()
                 .requestMatchers("/vantagens/**").permitAll()
-                .requestMatchers("vantagens/listar").permitAll()
+                .requestMatchers("/vantagens/listar").permitAll()
+                .requestMatchers("/vantagens/criar-com-imagem").permitAll()
+                .requestMatchers("/vantagens/criar-com-url").permitAll()
 
                 .requestMatchers("/alunos/historico").permitAll()
                 // Tudo o resto exige autenticação
@@ -86,5 +88,6 @@ public class SecurityConfig {
 
         return source;
     }
+    
 
 }

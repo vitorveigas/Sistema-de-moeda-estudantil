@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
         private Long id;
 
         @ManyToOne(optional = false)
-        @JoinColumn(name = "professor_id")
+        @JoinColumn(name = "professor_id",nullable = true)
         private Professor professor;
 
         @ManyToOne(optional = false)

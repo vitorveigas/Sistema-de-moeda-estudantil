@@ -19,6 +19,7 @@ public class Vantagem {
     private String titulo;
     private String descricao;
     private int custoMoedas;
+    private String img;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "empresa_id")

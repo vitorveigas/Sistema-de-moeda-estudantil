@@ -137,9 +137,17 @@
                                 <div class="input-container"><i class="fas fa-comment-alt"></i>
                                     <textarea id="descricaoVantagem" class="form-control" placeholder="Descrição" required></textarea>
                                 </div>
+                
                                 <div class="input-container"><i class="fas fa-dollar-sign"></i>
                                     <input type="number" id="valorVantagem" class="form-control" placeholder="Valor (opcional)">
                                 </div>
+
+                                <div class="input-container">
+                                    <i class="fas fa-image"></i>
+                                    <input type="text" id="imagemVantagem" class="form-control" placeholder="URL da imagem (https://...)" required>
+                                </div>
+
+
                                 <button type="submit" class="btn btn-success w-100"><i class="fas fa-paper-plane"></i> Cadastrar</button>
                                 <div id="cadastrarMessage" class="mt-3 fw-bold"></div>
                             </form>
@@ -235,18 +243,50 @@
     }
 
     // CADASTRAR VANTAGEM
-    document.getElementById('cadastrarVantagemForm').addEventListener('submit', function(e){
-        e.preventDefault();
-        const nome = document.getElementById('nomeVantagem').value;
-        const descricao = document.getElementById('descricaoVantagem').value;
-        const valor = document.getElementById('valorVantagem').value;
-        vantagens.push({nome, descricao, valor});
-        localStorage.setItem('vantagens', JSON.stringify(vantagens));
-        document.getElementById('cadastrarMessage').innerText = 'Vantagem cadastrada com sucesso!';
+    document.getElementById('cadastrarVantagemForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const nome = document.getElementById('nomeVantagem').value;
+    const descricao = document.getElementById('descricaoVantagem').value;
+    const valor = document.getElementById('valorVantagem').value;
+    const imagemUrl = document.getElementById('imagemVantagem').value;
+
+    if (!imagemUrl || !imagemUrl.startsWith("http")) {
+        document.getElementById('cadastrarMessage').innerText = "Insira uma URL válida!";
+        return;
+    }
+
+    const vantagemJson = {
+        empresaId: 1, // <-- colocar ID real da empresa logada
+        titulo: nome,
+        descricao: descricao,
+        custoMoedas: valor ? Number(valor) : 0,
+        img: imagemUrl   // 🔥 agora envia direto a URL da imagem
+    };
+
+    try {
+        const response = await fetch("http://localhost:8080/vantagens/criar-com-url", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(vantagemJson)
+        });
+
+        if (!response.ok) {
+            document.getElementById('cadastrarMessage').innerText = "Erro ao cadastrar vantagem.";
+            return;
+        }
+
+        const data = await response.json();
+
+        document.getElementById('cadastrarMessage').innerText = "Vantagem cadastrada com sucesso!";
         this.reset();
-        atualizarDashboard();
-        listarVantagens();
-    });
+
+    } catch (err) {
+        document.getElementById('cadastrarMessage').innerText = "Erro ao conectar com servidor.";
+        console.error(err);
+    }
+});
+
 
     // CARREGAR CONTA
     function carregarConta() {

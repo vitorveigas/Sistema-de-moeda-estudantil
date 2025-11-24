@@ -10,8 +10,14 @@ import com.lab.sistema_de_moedas.service.VantagemService;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
+
 
 @RestController
 @RequestMapping("/vantagens")
@@ -64,6 +70,74 @@ public class VantagemController {
         return ResponseEntity.ok(vantagens);
     }
 
+    
+    @PostMapping(value = "/criar-com-imagem", consumes = "multipart/form-data")
+public ResponseEntity<?> criarComImagem(
+        @RequestPart("vantagem") VantagemRequest req,
+        @RequestPart("file") MultipartFile file) {
+
+    try {
+        if (req.getEmpresaId() == null || req.getTitulo() == null || req.getTitulo().isEmpty()) {
+            return ResponseEntity.badRequest().body("Campos obrigatórios não informados!");
+        }
+
+        // 🔵 1 — Cria pasta uploads
+        Files.createDirectories(Paths.get("uploads"));
+
+        // 🔵 2 — Gera nome único
+        String nome = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        Path caminho = Paths.get("uploads/" + nome);
+        Files.write(caminho, file.getBytes());
+
+        // 🔵 3 — Gera URL pública
+        String urlImagem = "http://localhost:8080/uploads/" + nome;
+
+        // 🔵 4 — Cria e salva vantagem
+        Vantagem v = Vantagem.builder()
+                .titulo(req.getTitulo())
+                .descricao(req.getDescricao())
+                .custoMoedas(req.getCustoMoedas())
+                .img(urlImagem)
+                .build();
+
+        Vantagem salva = vantagemService.cadastrarVantagem(req.getEmpresaId(), v);
+
+        return ResponseEntity.ok(salva);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(500).body("Erro ao criar vantagem com imagem.");
+    }
+}
+@PostMapping("/criar-com-url")
+public ResponseEntity<?> criarComUrl(@RequestBody VantagemRequest req) {
+    try {
+        if (req.getEmpresaId() == null || 
+            req.getTitulo() == null || req.getTitulo().isEmpty()) {
+            return ResponseEntity.badRequest().body("Campos obrigatórios não informados!");
+        }
+
+        Vantagem v = Vantagem.builder()
+                .titulo(req.getTitulo())
+                .descricao(req.getDescricao())
+                .custoMoedas(req.getCustoMoedas())
+                .img(req.getImg())   // 🔥 salva direto a URL recebida
+                .build();
+
+        Vantagem salva = vantagemService.cadastrarVantagem(req.getEmpresaId(), v);
+
+        return ResponseEntity.ok(salva);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(500).body("Erro ao criar vantagem com URL.");
+    }
+}
+
+
+    
+
+
     // ✅ Caso de uso 3 — Aluno troca vantagem (usa JWT)
    @PostMapping("/trocar/{vantagemId}")
 public ResponseEntity<?> trocarVantagem(
@@ -111,5 +185,6 @@ public ResponseEntity<?> trocarVantagem(
         private String titulo;
         private String descricao;
         private int custoMoedas;
+        private String img;
     }
 }
