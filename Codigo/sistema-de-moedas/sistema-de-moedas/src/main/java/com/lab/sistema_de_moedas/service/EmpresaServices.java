@@ -26,6 +26,11 @@ public class EmpresaServices {
         .orElseThrow(()-> new RuntimeException("Empresa não encontrada"));
     }
 
+    public Empresa buscarPorEmail(String email){
+        return empresaRepositories.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Empresa não encontrada"));
+    }
+
     public void deletarPorId(Long id){
         empresaRepositories.deleteById(id);
     }
