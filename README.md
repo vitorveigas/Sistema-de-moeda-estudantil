@@ -34,6 +34,9 @@ Este projeto foi desenvolvido utilizando as seguintes tecnologias, padrões e ca
 - **PostgreSQL** – Banco de dados relacional utilizado para armazenar informações de usuários, pedidos, automóveis e contratos.
 - **Maven** – Gerenciador de dependências e automação de build para projetos Java.
 - **Spring Data JPA** – Abstração para comunicação com o banco de dados relacional, utilizando repositórios baseados em interfaces.
+- **JavaScript** - Para fazer a conexão entre o back-end e o front-end.
+- **HTML e CSS** - Para a estilização das páginas 
+- **EmailJS** - Para o envio de e-mails.
 
 ---
 
@@ -45,7 +48,7 @@ O sistema segue o padrão **MVC (Model-View-Controller)**, complementado com as 
 
 - **Controller**
   - Responsável por receber as requisições HTTP dos usuários (clientes ou agentes).
-  - Converte os dados recebidos em objetos apropriados (DTOs) e delega a lógica de negócio para a camada `Facade` ou `Service`.
+  - Converte os dados recebidos em objetos apropriados (DTOs) e delega a lógica de negócio para a camada `Service`.
 
 - **DTO (Data Transfer Object)**
   - Objetos simples usados para transportar dados entre o frontend e o backend.
@@ -100,3 +103,57 @@ O sistema segue o padrão **MVC (Model-View-Controller)**, complementado com as 
 Este projeto está licenciado sob a [MIT License](./LICENSE).
 Você pode usar, modificar e distribuir este código, desde que os **devidos créditos sejam dados**, com link para o [original repository](https://github.com/vitorveigas/Sistema-de-moeda-estudantil/tree/main). 
 Este projeto foi desenvolvido por [Caue Afonso](https://github.com/caueafonsomoraes), [Thomás Ramos](https://github.com/Thomasramos02), [Vinícius Gomes](https://github.com/viniciusgomesrod) e [Vitor Veiga](https://github.com/vitorveigas).
+
+---
+
+## Como rodar o projeto (Windows)
+
+Requisitos
+- Java 17+ (ou a versão exigida pelo projeto)
+- Maven 3.6+
+- PostgreSQL (ou Docker)
+- Git (opcional)
+
+1) Preparar o banco de dados (PostgreSQL)
+- Criar database e usuário:
+  - Abra o psql ou pgAdmin e execute:
+    CREATE DATABASE moeda_estudantil;
+    CREATE USER app_user WITH PASSWORD 'senha';
+    GRANT ALL PRIVILEGES ON DATABASE moeda_estudantil TO app_user;
+
+- Alternativa com Docker (PowerShell/CMD):
+  docker run --name pg-moeda -e POSTGRES_DB=moeda_estudantil -e POSTGRES_USER=app_user -e POSTGRES_PASSWORD=senha -p 5432:5432 -d postgres:15
+
+2) Configurar propriedades de conexão
+- Edite src/main/resources/application.properties (ou defina variáveis de ambiente):
+  ```properties
+  spring.datasource.url=jdbc:postgresql://localhost:5432/moeda_estudantil
+  spring.datasource.username=app_user
+  spring.datasource.password=senha
+
+  spring.jpa.hibernate.ddl-auto=update
+  spring.jpa.show-sql=true
+
+  server.port=8080
+  ```
+- Como variáveis de ambiente (PowerShell):
+  $env:SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/moeda_estudantil"
+  $env:SPRING_DATASOURCE_USERNAME="app_user"
+  $env:SPRING_DATASOURCE_PASSWORD="senha"
+
+3) Build e execução
+- Rodar diretamente com Maven:
+  mvn clean package -DskipTests
+  mvn spring-boot:run
+
+- Ou executar o JAR gerado:
+  java -jar target/*.jar
+
+4) Testes
+- Executar testes:
+  mvn test
+
+5) Observações
+- Ajuste as propriedades (porta, usuário, senha) conforme necessário.
+- Se usar uma IDE (VSCode/IntelliJ), importe o projeto como Maven e rode a classe principal Spring Boot.
+- Logs e SQL aparecem conforme spring.jpa.show-sql
