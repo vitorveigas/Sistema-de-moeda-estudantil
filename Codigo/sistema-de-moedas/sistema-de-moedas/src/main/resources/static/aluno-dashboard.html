@@ -520,6 +520,7 @@
 <script type="text/javascript"
         src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
 </script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
 
 <script>
     const API_BASE = 'http://localhost:8080';
@@ -876,9 +877,21 @@ async function trocarVantagem(vantagemId, triggerBtn = null) {
             ? vantagem.img
             : (vantagem?.imagemBase64
                 ? `data:image/jpeg;base64,${vantagem.imagemBase64}`
-                : "https://via.placeholder.com/300x150?text=Sem+Imagem");
+                : PLACEHOLDER_IMAGE_URL);
 
         if (alunoNome && alunoEmail && vantagem) {
+            // Gera código e QR que apontam para uma URL de validação
+            const codigoResgate = gerarCodigoAleatorio(10);
+            // Crie um endpoint no backend para validar o código (recomendo salvar esse código lá)
+            const validarUrl = `${API_BASE}/validar-resgate?code=${encodeURIComponent(codigoResgate)}`;
+
+            let qrDataUrl = null;
+            try {
+                qrDataUrl = await gerarQRCodeDataUrl(validarUrl);
+            } catch (qrErr) {
+                console.error('Erro ao gerar QR:', qrErr);
+            }
+
             const templateParams = {
                 to_name: alunoNome,
                 to_email: alunoEmail,
@@ -887,11 +900,13 @@ async function trocarVantagem(vantagemId, triggerBtn = null) {
                 empresa_nome: vantagem.empresa?.nomeFantasia || vantagem.empresa?.nome || "Empresa parceira",
                 custo: `${vantagem.custoMoedas} moedas`,
                 data_resgate: new Date().toLocaleString('pt-BR'),
-                vantagem_imagem: imagemUrl
+                vantagem_imagem: imagemUrl,
+                codigo_resgate: codigoResgate,   // texto visível no email
+                qr_image: qrDataUrl               // Data URL do QR (use <img src="{{qr_image}}"> no template)
             };
 
             emailjs.send('service_eb33j38', 'template_0985ayl', templateParams)
-                .then(() => console.log('Email enviado!'))
+                .then(() => console.log('Email enviado com código e QR!'))
                 .catch((err) => {
                     console.error(err);
                     showMessage('Vantagem resgatada, mas erro ao enviar email.', 'error');
@@ -1086,6 +1101,30 @@ function renderizarVantagens(lista) {
         carregarPerfil();
     });
 
+    // Gera um código aleatório seguro (usa crypto se disponível)
+    function gerarCodigoAleatorio(tamanho = 8) {
+        const bytes = new Uint8Array(tamanho);
+        if (window.crypto && crypto.getRandomValues) {
+            crypto.getRandomValues(bytes);
+        } else {
+            // fallback simples (menos seguro)
+            for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+        }
+        let s = '';
+        for (const b of bytes) s += (b % 36).toString(36);
+        return s.toUpperCase();
+    }
+
+    // Gera DataURL do QR (usa a lib qrcode já carregada)
+    async function gerarQRCodeDataUrl(texto) {
+        if (window.QRCode && QRCode.toDataURL) {
+            return QRCode.toDataURL(String(texto || ''), { margin: 1, width: 400 });
+        }
+        throw new Error('Biblioteca QRCode não encontrada');
+    }
+
+    // Use placeholder com URL completa — evita erro de resolução
+    const PLACEHOLDER_IMAGE_URL = 'https://via.placeholder.com/300x150?text=Sem+Imagem';
 </script>
 </body>
 </html>
