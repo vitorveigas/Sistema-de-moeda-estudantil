@@ -869,11 +869,16 @@ async function trocarVantagem(vantagemId, triggerBtn = null) {
         // ---------------------------------------
         const alunoNome  = document.getElementById('name')?.value;
         const alunoEmail = document.getElementById('email')?.value;
-
         const vantagem = vantagensDisponiveis?.find(v => v.id == vantagemId);
 
-        if (alunoNome && alunoEmail && vantagem) {
+        // Determina a URL/imagem (prioridade: img URL > base64 > placeholder)
+        const imagemUrl = vantagem?.img
+            ? vantagem.img
+            : (vantagem?.imagemBase64
+                ? `data:image/jpeg;base64,${vantagem.imagemBase64}`
+                : "https://via.placeholder.com/300x150?text=Sem+Imagem");
 
+        if (alunoNome && alunoEmail && vantagem) {
             const templateParams = {
                 to_name: alunoNome,
                 to_email: alunoEmail,
@@ -881,7 +886,8 @@ async function trocarVantagem(vantagemId, triggerBtn = null) {
                 vantagem_descricao: vantagem.descricao,
                 empresa_nome: vantagem.empresa?.nomeFantasia || vantagem.empresa?.nome || "Empresa parceira",
                 custo: `${vantagem.custoMoedas} moedas`,
-                data_resgate: new Date().toLocaleString('pt-BR')
+                data_resgate: new Date().toLocaleString('pt-BR'),
+                vantagem_imagem: imagemUrl
             };
 
             emailjs.send('service_eb33j38', 'template_0985ayl', templateParams)
