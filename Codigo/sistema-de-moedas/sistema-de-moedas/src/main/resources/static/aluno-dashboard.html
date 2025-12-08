@@ -882,14 +882,14 @@ async function trocarVantagem(vantagemId, triggerBtn = null) {
         if (alunoNome && alunoEmail && vantagem) {
             // Gera código e QR que apontam para uma URL de validação
             const codigoResgate = gerarCodigoAleatorio(10);
-            // Crie um endpoint no backend para validar o código (recomendo salvar esse código lá)
-            const validarUrl = `${API_BASE}/validar-resgate?code=${encodeURIComponent(codigoResgate)}`;
 
+            // Opção A: codificar diretamente a URL da imagem no QR
+            // (se imagemUrl for data:... pode ficar muito grande)
             let qrDataUrl = null;
             try {
-                qrDataUrl = await gerarQRCodeDataUrl(validarUrl);
+                qrDataUrl = await gerarQRCodeDataUrl(imagemUrl);
             } catch (qrErr) {
-                console.error('Erro ao gerar QR:', qrErr);
+                console.error('Erro ao gerar QR (imagem direta):', qrErr);
             }
 
             const templateParams = {
@@ -928,51 +928,47 @@ async function trocarVantagem(vantagemId, triggerBtn = null) {
     }
 }
 
-function renderizarVantagens(lista) {
-    vantagensLista.innerHTML = "";
+    // Use placeholder com URL completa — evita erro de resolução
+    const PLACEHOLDER_IMAGE_URL = 'https://via.placeholder.com/300x150?text=Sem+Imagem';
 
-    if (!lista || lista.length === 0) {
-        vantagensLista.innerHTML = `
-            <p class="text-center text-muted">Nenhuma vantagem disponível.</p>
-        `;
-        return;
-    }
+    function renderizarVantagens(lista) {
+        vantagensLista.innerHTML = "";
 
-    lista.forEach(v => {
-        const card = document.createElement("div");
-        card.className = "col-md-4";
+        if (!lista || lista.length === 0) {
+            vantagensLista.innerHTML = `
+                <p class="text-center text-muted">Nenhuma vantagem disponível.</p>
+            `;
+            return;
+        }
 
-        // 📌 Prioridade da imagem:
-        // 1 - URL enviada pelo backend (v.img)
-        // 2 - Base64 (v.imagemBase64)
-        // 3 - Placeholder
-        const imagem = v.img
-            ? v.img
-            : (v.imagemBase64 
-                ? `data:image/jpeg;base64,${v.imagemBase64}`
-                : "https://via.placeholder.com/300x150?text=Sem+Imagem");
+        lista.forEach(v => {
+            const card = document.createElement("div");
+            card.className = "col-md-4";
 
-        card.innerHTML = `
-            <div class="card vantagem-card shadow h-100">
-                <img src="${imagem}" class="card-img-top" alt="Imagem da vantagem">
+            // Prioridade da imagem: URL > base64 > placeholder
+            const imagem = v.img
+                ? v.img
+                : (v.imagemBase64
+                    ? `data:image/jpeg;base64,${v.imagemBase64}`
+                    : PLACEHOLDER_IMAGE_URL);
 
-                <div class="card-body">
-                    <h5 class="card-title">${v.titulo}</h5>
-                    <p class="card-text">${v.descricao}</p>
-
-                    <span class="badge bg-primary">${v.custoMoedas} moedas</span>
-
-                    <button class="btn btn-success w-100 mt-2" onclick="trocarVantagem(${v.id})">
-                        Resgatar
-                    </button>
+            card.innerHTML = `
+                <div class="card vantagem-card shadow h-100">
+                    <img src="${imagem}" class="card-img-top" alt="Imagem da vantagem">
+                    <div class="card-body">
+                        <h5 class="card-title">${v.titulo}</h5>
+                        <p class="card-text">${v.descricao}</p>
+                        <span class="badge bg-primary">${v.custoMoedas} moedas</span>
+                        <button class="btn btn-success w-100 mt-2" onclick="trocarVantagem(${v.id})">
+                            Resgatar
+                        </button>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
 
-        vantagensLista.appendChild(card);
-    });
-}
-
+            vantagensLista.appendChild(card);
+        });
+    }
 
     
 
@@ -1122,9 +1118,6 @@ function renderizarVantagens(lista) {
         }
         throw new Error('Biblioteca QRCode não encontrada');
     }
-
-    // Use placeholder com URL completa — evita erro de resolução
-    const PLACEHOLDER_IMAGE_URL = 'https://via.placeholder.com/300x150?text=Sem+Imagem';
 </script>
 </body>
 </html>
