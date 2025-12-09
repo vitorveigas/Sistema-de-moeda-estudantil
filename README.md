@@ -2,6 +2,7 @@
 
 Um projeto desenvolvido com foco em organização, arquitetura limpa e modernidade. Aqui você encontra tudo sobre o sistema, desde sua arquitetura, tecnologias usadas, diagramas até instruções para rodá-lo no seu ambiente.
 
+https://moedas-estudantis.onrender.com/login.html
 ---
 
 ## 👥 Equipe de Desenvolvimento
