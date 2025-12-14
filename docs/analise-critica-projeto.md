@@ -5,7 +5,7 @@
 - **📘 Disciplina:** Laboratório de Desenvolvimento de Software
 - **🗓 Período:** 4° Período
 - **👨‍🏫 Professor(a):** Prof. Dr. João Paulo Carneiro Aramuni
-- **👥 Membros do Grupo:** [Lista de integrantes]
+- **👥 Membros do Grupo:** Cauê Afonso Moraes, Thomás Ramos Oliveira, Vinícius Gomes Rodrigues, Vitor Veiga Silva
 
 ---
 
