@@ -10,7 +10,7 @@
 ---
 
 ## 📌 2. Identificação do Projeto
-- **Nome do projeto:** _Informe aqui_
+- **Nome do projeto:** Sistema_Moeda_Estudantil
 - **Integrantes do outro grupo:** Enzo Cazaes, João Vitor Filardi, Rafael Faria
 - **Link do repositório:** https://github.com/RafaelFFranco/Sistema-Moeda-Estudantil
 - **Pull requests submetidos pelo seu grupo:**
