@@ -466,6 +466,64 @@ public String capitalizeCity(String city) {
 Elimina duplicação e facilita manutenção.
 
 ---
+**Arquivo e localização:** `src/main/java/br/edu/moedaestudantil/service/ProfessorService.java`, `AlunoService.java`, `EmpresaService.java` (método `save`)
+
+#### 🔴 Antes
+
+```java
+// ProfessorService.java
+public Professor save(Professor professor) {
+    // Gerenciar senha
+    if (professor.getId() != null) {
+        Optional<Professor> professorExistente = professorRepository.findById(professor.getId());
+        if (professorExistente.isPresent()) {
+            Professor professorAntigo = professorExistente.get();
+            if (professor.getSenha() == null || professor.getSenha().isEmpty()) {
+                professor.setSenha(professorAntigo.getSenha());
+            } else if (!isPasswordEncrypted(professor.getSenha())) {
+                professor.setSenha(passwordEncoder.encode(professor.getSenha()));
+            }
+        }
+    } else {
+        if (professor.getSenha() != null && !professor.getSenha().isEmpty() && !isPasswordEncrypted(professor.getSenha())) {
+            professor.setSenha(passwordEncoder.encode(professor.getSenha()));
+        }
+    }
+    // ... resto do método
+}
+```
+
+#### 🟢 Depois
+
+**Nova classe:** `PasswordManagementUtils.java`
+
+```java
+package br.edu.moedaestudantil.util;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+import java.util.Optional;
+import java.util.function.Function;
+
+@Component
+public class PasswordManagementUtils {
+
+    private final PasswordEncoder passwordEncoder;
+    private final PasswordUtils passwordUtils;
+
+    public PasswordManagementUtils(PasswordEncoder passwordEncoder, PasswordUtils passwordUtils) {
+        this.passwordEncoder = passwordEncoder;
+        this.passwordUtils = passwordUtils;
+    }
+
+    public <T> void handlePasswordForEntity(T entity, Long id, Function<Long, Optional<T>> findById, 
+                                           Function<T, String> getSenha, 
+                                           java.util.function.BiConsumer<T, String> setSenha) {
+        // Implementação do método...
+    }
+}
+```
+📝 **Justificativa técnica:** Elimina duplicação da lógica complexa de gerenciamento de senha (verificação de existência, preservação de senha antiga, criptografia condicional) em 3 serviços. Usa generics para reutilização, facilitando manutenção e reduzindo bugs por inconsistências.
 
 ### 3️⃣ Refatoração 3 – Melhoria de Nomes (Rename)
 
@@ -497,6 +555,65 @@ public void saveProduct(@RequestBody Product product) {
 Melhora a clareza e expressividade do código.
 
 ---
+
+**Arquivo e localização:** `MoedaController.java` (métodos `adicionar`, `remover`, `transferir`, `trocar`)
+
+#### 🔴 Antes
+
+```java
+@PostMapping("/adicionar")
+public String adicionar(@RequestParam Long professorId, @RequestParam Long alunoId, 
+                       @RequestParam int quantidade, RedirectAttributes redirectAttributes) {
+    // ...
+}
+
+@PostMapping("/remover")
+public String remover(@RequestParam Long professorId, @RequestParam Long alunoId, 
+                     @RequestParam int quantidade, RedirectAttributes redirectAttributes) {
+    // ...
+}
+
+@PostMapping("/transferir")
+public String transferir(@RequestParam Long deAlunoId, @RequestParam Long paraAlunoId, 
+                        @RequestParam int quantidade, RedirectAttributes redirectAttributes) {
+    // ...
+}
+
+@PostMapping("/trocar")
+public String trocar(@RequestParam Long alunoId, @RequestParam Long vantagemId, 
+                    RedirectAttributes redirectAttributes) {
+    // ...
+}
+```
+
+#### 🟢 Depois
+
+```java
+@PostMapping("/add")
+public String addCoins(@RequestParam Long professorId, @RequestParam Long studentId, 
+                      @RequestParam int amount, RedirectAttributes redirectAttributes) {
+    // ...
+}
+
+@PostMapping("/remove")
+public String removeCoins(@RequestParam Long professorId, @RequestParam Long studentId, 
+                         @RequestParam int amount, RedirectAttributes redirectAttributes) {
+    // ...
+}
+
+@PostMapping("/transfer")
+public String transferCoins(@RequestParam Long fromStudentId, @RequestParam Long toStudentId, 
+                           @RequestParam int amount, RedirectAttributes redirectAttributes) {
+    // ...
+}
+
+@PostMapping("/exchange")
+public String exchangeForAdvantage(@RequestParam Long studentId, @RequestParam Long advantageId, 
+                                  RedirectAttributes redirectAttributes) {
+    // ...
+}
+```
+📝 **Justificativa técnica:** Nomes em português (`adicionar`, `remover`) dificultam compreensão para desenvolvedores internacionais. Renomear para inglês (`addCoins`, `removeCoins`) segue convenções Java, melhora legibilidade e facilita colaboração em equipes globais.
 
 ## 9. 📄 Conclusão
 
