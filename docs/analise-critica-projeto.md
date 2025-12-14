@@ -216,13 +216,20 @@ Avalie o projeto com base em vulnerabilidades comuns, como as citadas no OWASP T
 
 Liste **entre 5 e 7 sugestões claras e prioritárias** para os autores do projeto, baseadas nas análises acima (Seções 3, 4, 5 e 6).
 
-1. **Melhoria da Documentação:** Criar um arquivo `CONTRIBUTING.md`, adicionar instruções completas de configuração do ambiente (Java, Maven, variáveis de ambiente e scripts de inicialização) e incluir uma seção de troubleshooting no `README.md`.
-2. **Padronização do Código:** Adotar **Conventional Commits**, habilitar ferramentas como **Spotless**, **Checkstyle** ou **SonarLint** para manter consistência e detectar code smells automaticamente.
-3. **Testes Automatizados:** Implementar testes unitários na camada de **Service** e testes de integração com **Spring Boot Test**, buscando ao menos **80% de cobertura** nas funcionalidades principais.
-4. **Melhorias de Segurança:** Utilizar **Spring Validation** para validação de DTOs, adicionar tratamento centralizado de erros com `@ControllerAdvice`, remover informações sensíveis de logs e revisar dependências vulneráveis usando `mvn dependency-check`.
-5. **Organização do Repositório:** Padronizar a estrutura de pastas, adicionar templates de Pull Request e Issues, além de configurar Branch Protection para `main`.
-6. **Performance e Otimização:** Analisar pontos de gargalo no carregamento de dados, reduzir consultas redundantes, aplicar cache quando adequado e revisar métodos que fazem processamento excessivo no backend.
-7. **Automação e CI/CD:** Criar uma pipeline no **GitHub Actions** para rodar testes, verificar estilo, validar segurança das dependências e realizar build automático a cada PR.
+1. Implementação de Testes Automatizados: O projeto não possui testes (não há diretório src/test), o que viola princípios de testabilidade. Adicione testes unitários para serviços (ex.: AlunoService, MoedaService) usando JUnit e Mockito, visando cobertura mínima de 70%. Inclua testes de integração com @SpringBootTest para controladores e repositórios, priorizando funcionalidades críticas como transferência de moedas e autenticação.
+
+2. Reforço da Segurança e Tratamento de Erros: Credenciais de banco e e-mail estão expostas no application.properties (ex.: senha do PostgreSQL visível), representando risco de OWASP Top 10 (exposição de credenciais). Migre para variáveis de ambiente ou arquivos não versionados. Habilite CSRF no SecurityConfig.java, adicione validações rigorosas em DTOs com @Valid e Bean Validation, e implemente tratamento centralizado de erros com @ControllerAdvice para evitar vazamento de informações (ex.: status 500 genérico em vez de stack traces).
+
+3. Padronização do Código e Ferramentas de Qualidade: O código segue MVC básico, mas carece de ferramentas para detectar code smells (ex.: métodos longos em controladores como AlunoController). Adote Conventional Commits para mensagens de commit, integre Checkstyle ou SonarLint no Maven para análise estática, e configure Spotless para formatação automática. Isso melhorará coesão e reduzirá duplicação de código.
+
+4. Melhoria da Documentação e Organização do Repositório: O README.md é detalhado, mas falta um CONTRIBUTING.md com guias de contribuição, templates de Pull Request e Issues. Padronize branches (ex.: main, develop, feature/*), configure Branch Protection no GitHub para exigir revisões em PRs, e adicione seção de troubleshooting no README para erros comuns (ex.: configuração de e-mail).
+
+5. Otimização de Performance e Consultas: Há potencial para gargalos em consultas JPA (ex.: findByQuery em AlunoService pode ser ineficiente sem índices). Analise queries com spring.jpa.show-sql=true, adicione cache com @Cacheable em métodos de leitura frequente, e otimize métodos que processam dados excessivos (ex.: listagens sem paginação). Revise dependências para remover redundâncias.
+
+6. Integração de CI/CD e Automação: Não há pipeline de CI/CD, o que deixa builds e testes manuais. Configure GitHub Actions para executar mvn clean test e mvn verify em cada PR, incluindo verificação de vulnerabilidades com mvn dependency-check. Isso automatizará qualidade e reduzirá regressões.
+
+4. Revisão de Dependências e Compatibilidade: O pom.xml usa versões compatíveis, mas dependências como ZXing não são auditadas. Execute mvn dependency-check para detectar CVEs (ex.: possíveis vulnerabilidades em bibliotecas antigas). Atualize para versões mais recentes do Spring Boot se compatíveis.
+
 
 ---
 
