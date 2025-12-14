@@ -444,99 +444,101 @@
             return 'index.html';
         }
 
-        // Login form
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            showLoading(true);
-            
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            try {
-                const response = await fetch(`${API_BASE}/auth/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    currentToken = data.token;
-                    currentUserType = data.userType;
-                    localStorage.setItem('token', currentToken);
-                    localStorage.setItem('userType', currentUserType);
-                    console.log('Token salvo:', currentToken);
-                    console.log('UserType salvo:', currentUserType);
-                    showMessage('Login realizado com sucesso!');
-                    setTimeout(() => {
-                        window.location.href = redirectByUserType(currentUserType);
-                    }, 800);
-                } else {
-                    showMessage(data.error || 'Erro no login', 'error');
-                }
-            } catch (error) {
-                showMessage('Erro de conexão', 'error');
-            } finally {
-                showLoading(false);
-            }
-        });
+function persistAuth(token, userType) {
+  currentToken = token;
+  currentUserType = userType;
+  localStorage.setItem('token', token);
+  localStorage.setItem('userType', userType);
+}
 
-        // Register form
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            showLoading(true);
-            
-            const userType = document.getElementById('userType').value;
-            const formData = {
-                nome: document.getElementById('regName').value,
-                email: document.getElementById('regEmail').value,
-                senha: document.getElementById('regPassword').value
-            };
-            
-            if (userType === 'aluno') {
-                formData.matricula = document.getElementById('matricula').value;
-                formData.curso = document.getElementById('curso').value;
-                formData.cpf = document.getElementById('cpf').value;
-                formData.rg = document.getElementById('rg').value;
-                formData.instituicaoEnsino = document.getElementById('instituicao').value;
-                formData.endereco = document.getElementById('endereco').value;
-            } else {
-                formData.cnpj = document.getElementById('cnpj').value;
-                formData.razaoSocial = document.getElementById('razaoSocial').value;
-                formData.endereco = document.getElementById('empresaEndereco').value;
-            }
-            
-            try {
-                const endpoint = userType === 'aluno' ? '/auth/register/aluno' : '/auth/register/empresa';
-                const response = await fetch(`${API_BASE}${endpoint}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    currentToken = data.token;
-                    currentUserType = data.userType;
-                    localStorage.setItem('token', currentToken);
-                    localStorage.setItem('userType', currentUserType);
-                    console.log('Token salvo no cadastro:', currentToken);
-                    console.log('UserType salvo no cadastro:', currentUserType);
-                    showMessage('Cadastro realizado com sucesso!');
-                    setTimeout(() => {
-                        window.location.href = redirectByUserType(currentUserType);
-                    }, 800);
-                } else {
-                    showMessage(data.error || 'Erro no cadastro', 'error');
-                }
-            } catch (error) {
-                showMessage('Erro de conexão', 'error');
-            } finally {
-                showLoading(false);
-            }
-        });
+function redirectAfterAuth(userType, successMsg) {
+  showMessage(successMsg);
+  setTimeout(() => {
+    window.location.href = redirectByUserType(userType);
+  }, 800);
+}
+
+async function postJson(url, payload) {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await response.json();
+  return { response, data };
+}
+
+async function handleAuthSubmit({ url, payload, successMsg, errorMsgDefault }) {
+  showLoading(true);
+  try {
+    const { response, data } = await postJson(url, payload);
+
+    if (response.ok) {
+      persistAuth(data.token, data.userType);
+      redirectAfterAuth(data.userType, successMsg);
+      return;
+    }
+
+    showMessage(data.error || errorMsgDefault, 'error');
+  } catch (e) {
+    showMessage('Erro de conexão', 'error');
+  } finally {
+    showLoading(false);
+  }
+}
+
+// Login
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const payload = {
+    email: document.getElementById('loginEmail').value,
+    password: document.getElementById('loginPassword').value
+  };
+
+  await handleAuthSubmit({
+    url: `${API_BASE}/auth/login`,
+    payload,
+    successMsg: 'Login realizado com sucesso!',
+    errorMsgDefault: 'Erro no login'
+  });
+});
+
+// Cadastro
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const userType = document.getElementById('userType').value;
+
+  const formData = {
+    nome: document.getElementById('regName').value,
+    email: document.getElementById('regEmail').value,
+    senha: document.getElementById('regPassword').value
+  };
+
+  if (userType === 'aluno') {
+    formData.matricula = document.getElementById('matricula').value;
+    formData.curso = document.getElementById('curso').value;
+    formData.cpf = document.getElementById('cpf').value;
+    formData.rg = document.getElementById('rg').value;
+    formData.instituicaoEnsino = document.getElementById('instituicao').value;
+    formData.endereco = document.getElementById('endereco').value;
+  } else {
+    formData.cnpj = document.getElementById('cnpj').value;
+    formData.razaoSocial = document.getElementById('razaoSocial').value;
+    formData.endereco = document.getElementById('empresaEndereco').value;
+  }
+
+  const endpoint = (userType === 'aluno') ? '/auth/register/aluno' : '/auth/register/empresa';
+
+  await handleAuthSubmit({
+    url: `${API_BASE}${endpoint}`,
+    payload: formData,
+    successMsg: 'Cadastro realizado com sucesso!',
+    errorMsgDefault: 'Erro no cadastro'
+  });
+});
     </script>
 </body>
 </html>
