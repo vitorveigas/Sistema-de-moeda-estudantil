@@ -129,22 +129,58 @@ Avalie as práticas de Engenharia de Software Colaborativa do projeto, focando n
 
 ## 🖥️ 5. Dificuldade para Configuração do Ambiente
 
-Descreva aqui como foi a experiência do grupo ao configurar e executar o projeto com Spring Boot.
-
 ### 5.1. Requisitos de Linguagem e Ferramentas de Build
-* **Versão do Java:** O projeto exige **Java 17**, mas essa informação não estava documentada no README? _(Exemplo: O projeto exigia Java 17, mas o grupo tentou rodar com Java 11. Descreva a correção.)_
-* **Ferramenta de Build:** O **Maven**/Gradle não baixou todas as dependências automaticamente devido a versões incompatíveis? A aplicação falhava por falta do plugin correto (ex.: `spring-boot-maven-plugin` ausente no `pom.xml`)?
-* **Dependências e Compatibilidade:** Dependências do **Thymeleaf** ou módulos Web não estavam declaradas corretamente, impedindo o *build*?
+
+**Versão do Java:** O projeto exige explicitamente **Java 17**, e esta informação está claramente documentada na seção "Tecnologias" do README. O grupo não enfrentou problemas relacionados à versão do Java, pois a documentação é precisa. A aplicação não iniciaria corretamente com versões anteriores do Java devido a recursos específicos do Spring Boot 3.x que exigem Java 17+.
+
+**Ferramenta de Build:** O projeto utiliza **Maven** como ferramenta de build. Todas as dependências foram baixadas automaticamente sem conflitos de versão. O arquivo `pom.xml` está bem configurado com o plugin `spring-boot-maven-plugin` presente, permitindo a execução do projeto com `mvn spring-boot:run`. A aplicação não apresentou falhas de build por ausência de plugins ou dependências mal configuradas.
+
+**Dependências e Compatibilidade:** As dependências do **Thymeleaf** e dos módulos Spring (Web, Security, Data JPA, Mail) estão declaradas corretamente e são compatíveis entre si. O build foi executado com sucesso na primeira tentativa, sem necessidade de ajustes manuais nas versões das dependências.
 
 ### 5.2. Configuração de Persistência e Variáveis de Ambiente
-* **Arquivos de Configuração:** O projeto não iniciava porque o arquivo `application.properties` ou `application.yml` não estava configurado (ex.: variáveis de banco de dados ausentes)?
-* **Variáveis de Ambiente:** O projeto dependia de variáveis de ambiente cruciais (`API_KEY`, `SERVER_PORT`, `DB_PASSWORD`, etc.) que **não estavam documentadas** no README ou que eram difíceis de configurar?  _(Descreva a variável e onde ela foi definida/corrigida)_
-* **Banco de Dados Local:** O banco **PostgreSQL** precisava ser criado manualmente, mas isso não estava explicado? O container Docker do banco não iniciava devido à falta de instruções ou variáveis de ambiente?
+
+**Arquivos de Configuração:** O arquivo `application.properties` está completo e funcional por padrão. A aplicação inicia sem erros porque as configurações essenciais já estão presentes. O projeto oferece uma configuração "bateria incluída" com conexão pré-estabelecida para um banco PostgreSQL hospedado na Railway, eliminando a necessidade de configuração inicial do banco de dados.
+
+**Variáveis de Ambiente:** O projeto depende de variáveis de ambiente para a conexão com banco de dados e serviço de e-mail, porém:
+1. **Banco de dados:** As credenciais estão pré-configuradas no `application.properties`, conectando-se automaticamente a uma instância PostgreSQL na Railway
+2. **E-mail:** O modo de teste está ativado por padrão (`app.mail.enabled=false`), evitando erros por falta de configuração SMTP
+3. **Documentação:** O README fornece instruções claras para configurar e-mail com Gmail quando necessário
+
+**Observação de segurança:** As credenciais do banco de dados estão visíveis no README, o que é aceitável para um projeto acadêmico mas exigiria ajustes (uso de variáveis de ambiente ou arquivos não versionados) para um ambiente de produção.
+
+**Banco de Dados Local:** Não foi necessário criar um banco PostgreSQL local manualmente. Para desenvolvimento local, o README explica como configurar o H2 em memória, que não requer instalação ou criação prévia de banco. As instruções são claras: basta descomentar a configuração do H2 no `application.properties`.
 
 ### 5.3. Aspectos a Analisar e Soluções Aplicadas
-* **Aspectos a Analisar:** Versão do Java utilizada, Ferramenta de build (Maven ou Gradle), Dependências e compatibilidades, Banco de Dados e forma de inicialização (local, Docker, memória), Arquivos de Configuração necessários, Passos para subir backend + frontend (caso use Next.js).
-* **Passos para Subir:** Quais passos extras foram necessários para subir o backend e/ou frontend (caso use Next.js)?
-* **Soluções Aplicadas:** Descreva **detalhadamente cada passo necessário para a execução**, incluindo como o grupo corrigiu os problemas de documentação, versões ou configuração.
+
+**Aspectos a Analisar:**
+- **Versão do Java:** 17 (conforme documentado)
+- **Ferramenta de build:** Maven 3.9+
+- **Dependências:** Spring Boot 3.1.6 com todos os módulos necessários
+- **Banco de Dados:** PostgreSQL na Railway (pré-configurado) com opção para H2 local
+- **Arquivos de Configuração:** `application.properties` completo e funcional
+- **Frontend:** Thymeleaf templates (não requer Node.js ou build separado)
+
+**Passos para Subir:**
+1. Clonar o repositório: `git clone [URL]`
+2. Verificar instalação do Java 17: `java -version`
+3. Executar a aplicação usando uma das opções:
+   - **Opção recomendada:** Executar `run-fast.bat` (Windows) ou `./run-fast.sh` (Linux/Mac)
+   - **Alternativa 1:** Executar via Maven: `mvn spring-boot:run`
+   - **Alternativa 2:** Importar no VS Code e usar a configuração "Run MoedaEstudantilApplication (Fast)"
+4. Acessar a aplicação em `http://localhost:8080`
+5. Fazer login com um dos usuários de teste (documentados no README)
+
+**Tempo total para execução:** Menos de 5 minutos
+
+**Soluções Aplicadas:** O grupo não precisou aplicar correções na documentação, ajustar versões ou resolver dependências quebradas. A experiência de configuração foi extremamente simples graças a:
+
+1. **Documentação completa:** Todas as informações necessárias estavam no README
+2. **Configuração pré-estabelecida:** Conexão com banco de dados já funcional
+3. **Modo de desenvolvimento otimizado:** Scripts `run-fast` com flags JVM para inicialização rápida
+4. **Usuários de teste pré-cadastrados:** Permitiram testar todas as funcionalidades imediatamente
+5. **Fallbacks inteligentes:** E-mail em modo de teste por padrão, evitando erros de configuração
+
+**Conclusão:** A configuração do ambiente foi notavelmente simples e direta. O projeto serve como exemplo de boa documentação e configuração "pronta para uso", reduzindo significativamente a barreira de entrada para novos desenvolvedores ou avaliadores.
 
 > [!WARNING]
 > Caso o grupo tenha enfrentado erros por falta de documentação, versões inconsistentes ou dependências quebradas, **descreva detalhadamente cada passo necessário para a execução**, incluindo como corrigiram os problemas.
