@@ -131,24 +131,24 @@ Avalie as práticas de Engenharia de Software Colaborativa do projeto, focando n
 
 ### 5.1. Requisitos de Linguagem e Ferramentas de Build
 
-**Versão do Java:** O projeto exige explicitamente **Java 17**, e esta informação está claramente documentada na seção "Tecnologias" do README. O grupo não enfrentou problemas relacionados à versão do Java, pois a documentação é precisa. A aplicação não iniciaria corretamente com versões anteriores do Java devido a recursos específicos do Spring Boot 3.x que exigem Java 17+.
+* **Versão do Java:** O projeto exige explicitamente **Java 17**, e esta informação está claramente documentada na seção "Tecnologias" do README. O grupo não enfrentou problemas relacionados à versão do Java, pois a documentação é precisa. A aplicação não iniciaria corretamente com versões anteriores do Java devido a recursos específicos do Spring Boot 3.x que exigem Java 17+.
 
-**Ferramenta de Build:** O projeto utiliza **Maven** como ferramenta de build. Todas as dependências foram baixadas automaticamente sem conflitos de versão. O arquivo `pom.xml` está bem configurado com o plugin `spring-boot-maven-plugin` presente, permitindo a execução do projeto com `mvn spring-boot:run`. A aplicação não apresentou falhas de build por ausência de plugins ou dependências mal configuradas.
+* **Ferramenta de Build:** O projeto utiliza **Maven** como ferramenta de build. Todas as dependências foram baixadas automaticamente sem conflitos de versão. O arquivo `pom.xml` está bem configurado com o plugin `spring-boot-maven-plugin` presente, permitindo a execução do projeto com `mvn spring-boot:run`. A aplicação não apresentou falhas de build por ausência de plugins ou dependências mal configuradas.
 
-**Dependências e Compatibilidade:** As dependências do **Thymeleaf** e dos módulos Spring (Web, Security, Data JPA, Mail) estão declaradas corretamente e são compatíveis entre si. O build foi executado com sucesso na primeira tentativa, sem necessidade de ajustes manuais nas versões das dependências.
+* **Dependências e Compatibilidade:** As dependências do **Thymeleaf** e dos módulos Spring (Web, Security, Data JPA, Mail) estão declaradas corretamente e são compatíveis entre si. O build foi executado com sucesso na primeira tentativa, sem necessidade de ajustes manuais nas versões das dependências.
 
 ### 5.2. Configuração de Persistência e Variáveis de Ambiente
 
-**Arquivos de Configuração:** O arquivo `application.properties` está completo e funcional por padrão. A aplicação inicia sem erros porque as configurações essenciais já estão presentes. O projeto oferece uma configuração "bateria incluída" com conexão pré-estabelecida para um banco PostgreSQL hospedado na Railway, eliminando a necessidade de configuração inicial do banco de dados.
+* **Arquivos de Configuração:** O arquivo `application.properties` está completo e funcional por padrão. A aplicação inicia sem erros porque as configurações essenciais já estão presentes. O projeto oferece uma configuração "bateria incluída" com conexão pré-estabelecida para um banco PostgreSQL hospedado na Railway, eliminando a necessidade de configuração inicial do banco de dados.
 
-**Variáveis de Ambiente:** O projeto depende de variáveis de ambiente para a conexão com banco de dados e serviço de e-mail, porém:
+* **Variáveis de Ambiente:** O projeto depende de variáveis de ambiente para a conexão com banco de dados e serviço de e-mail, porém:
 1. **Banco de dados:** As credenciais estão pré-configuradas no `application.properties`, conectando-se automaticamente a uma instância PostgreSQL na Railway
 2. **E-mail:** O modo de teste está ativado por padrão (`app.mail.enabled=false`), evitando erros por falta de configuração SMTP
 3. **Documentação:** O README fornece instruções claras para configurar e-mail com Gmail quando necessário
 
-**Observação de segurança:** As credenciais do banco de dados estão visíveis no README, o que é aceitável para um projeto acadêmico mas exigiria ajustes (uso de variáveis de ambiente ou arquivos não versionados) para um ambiente de produção.
+* **Observação de segurança:** As credenciais do banco de dados estão visíveis no README, o que é aceitável para um projeto acadêmico mas exigiria ajustes (uso de variáveis de ambiente ou arquivos não versionados) para um ambiente de produção.
 
-**Banco de Dados Local:** Não foi necessário criar um banco PostgreSQL local manualmente. Para desenvolvimento local, o README explica como configurar o H2 em memória, que não requer instalação ou criação prévia de banco. As instruções são claras: basta descomentar a configuração do H2 no `application.properties`.
+* **Banco de Dados Local:** Não foi necessário criar um banco PostgreSQL local manualmente. Para desenvolvimento local, o README explica como configurar o H2 em memória, que não requer instalação ou criação prévia de banco. As instruções são claras: basta descomentar a configuração do H2 no `application.properties`.
 
 ### 5.3. Aspectos a Analisar e Soluções Aplicadas
 
@@ -240,47 +240,95 @@ Cada refatoração deve conter:
 
 ### 1️⃣ Refatoração 1 – Extração de Método (Extract Method)
 
-**Arquivo:** `src/main/java/com/example/service/UserService.java`  
+**Arquivo:** `src/main/java/br/edu/moedaestudantil/service/ProfessorService.java, AlunoService.java, EmpresaService.java
 **Pull Request:** https://github.com/exemplo/projeto/pull/1  
 
 #### 🔴 Antes
 ```java
-public User createUser(UserDTO dto) {
-    if (dto.getEmail() == null || !dto.getEmail().contains("@")) {
-        throw new IllegalArgumentException("Email inválido");
-    }
-    if (dto.getPassword() == null || dto.getPassword().length() < 8) {
-        throw new IllegalArgumentException("Senha fraca");
-    }
+// ProfessorService.java
+private boolean isPasswordEncrypted(String password) {
+    return password != null && (password.startsWith("$2a$") || password.startsWith("$2b$") || password.startsWith("$2y$"));
+}
 
-    User user = new User(dto.getEmail(), dto.getPassword());
-    return userRepository.save(user);
+// AlunoService.java
+private boolean isPasswordEncrypted(String password) {
+    // BCrypt passwords start with $2a$, $2b$, or $2y$
+    return password != null && (password.startsWith("$2a$") || password.startsWith("$2b$") || password.startsWith("$2y$"));
+}
+
+// EmpresaService.java
+private boolean isPasswordEncrypted(String password) {
+    return password != null && (password.startsWith("$2a$") || password.startsWith("$2b$") || password.startsWith("$2y$"));
 }
 ```
 
 #### 🟢 Depois
 ```java
-private void validateUserDTO(UserDTO dto) {
-    if (dto.getEmail() == null || !dto.getEmail().contains("@")) {
-        throw new IllegalArgumentException("Email inválido");
+// Nova classe: PasswordUtils.java
+package br.edu.moedaestudantil.util;
+
+import org.springframework.stereotype.Component;
+
+@Component
+public class PasswordUtils {
+    
+    public boolean isPasswordEncrypted(String password) {
+        return password != null && 
+               (password.startsWith("$2a$") || 
+                password.startsWith("$2b$") || 
+                password.startsWith("$2y$"));
     }
-    if (dto.getPassword() == null || dto.getPassword().length() < 8) {
-        throw new IllegalArgumentException("Senha fraca");
+    
+    public boolean isWeakPassword(String password) {
+        return password == null || password.length() < 8;
     }
 }
 
-public User createUser(UserDTO dto) {
-    validateUserDTO(dto);
-    User user = new User(dto.getEmail(), dto.getPassword());
-    return userRepository.save(user);
+// ProfessorService.java (e outras services)
+@Service
+public class ProfessorService {
+    private final ProfessorRepository professorRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final PasswordUtils passwordUtils;
+
+    public ProfessorService(ProfessorRepository professorRepository, 
+                           PasswordEncoder passwordEncoder,
+                           PasswordUtils passwordUtils) {
+        this.professorRepository = professorRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.passwordUtils = passwordUtils;
+    }
+    
+    private void handlePasswordManagement(Professor professor) {
+        if (professor.getId() != null) {
+            Optional<Professor> professorExistente = professorRepository.findById(professor.getId());
+            if (professorExistente.isPresent()) {
+                Professor professorAntigo = professorExistente.get();
+                if (professor.getSenha() == null || professor.getSenha().isEmpty()) {
+                    professor.setSenha(professorAntigo.getSenha());
+                } else if (!passwordUtils.isPasswordEncrypted(professor.getSenha())) {
+                    professor.setSenha(passwordEncoder.encode(professor.getSenha()));
+                }
+            }
+        } else {
+            if (professor.getSenha() != null && 
+                !professor.getSenha().isEmpty() && 
+                !passwordUtils.isPasswordEncrypted(professor.getSenha())) {
+                professor.setSenha(passwordEncoder.encode(professor.getSenha()));
+            }
+        }
+    }
 }
 ```
 
 #### ✔ Tipo de refatoração aplicada
-- **Extract Method**  
+- **Extract Class para utilidades de senha** 
 
 #### 📝 Justificativa
-Melhora a clareza, responsabilidade única e testabilidade.
+- Eliminação de duplicação: Remove código idêntico em 3 classes diferentes
+- Centralização: Todas as regras de validação de senha em um único lugar
+- Manutenibilidade: Alterações em regras de senha afetam todas as services automaticamente
+- Extensibilidade: Facilita adição de novas validações (ex: força da senha, regex patterns)
 
 ---
 
