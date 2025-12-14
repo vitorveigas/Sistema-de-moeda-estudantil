@@ -240,8 +240,8 @@ Cada refatoração deve conter:
 
 ### 1️⃣ Refatoração 1 – Extração de Método (Extract Method)
 
-**Arquivo:** `src/main/java/br/edu/moedaestudantil/service/ProfessorService.java, AlunoService.java, EmpresaService.java
-**Pull Request:** https://github.com/exemplo/projeto/pull/1  
+**Arquivo:** `src/main/java/br/edu/moedaestudantil/service/ProfessorService.java, AlunoService.java, EmpresaService.java`
+**Pull Request:** https://github.com/RafaelFFranco/Sistema-Moeda-Estudantil/pull/1 
 
 #### 🔴 Antes
 ```java
