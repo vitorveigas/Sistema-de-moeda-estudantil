@@ -98,32 +98,120 @@ Principais características:
 
 ## 🗂️ 4. Organização do GitHub e Fluxo de Trabalho Colaborativo
 
-Avalie as práticas de Engenharia de Software Colaborativa do projeto, focando na clareza, padronização e rastreabilidade.
+Esta seção avalia as práticas de Engenharia de Software Colaborativa do projeto, com foco na clareza, padronização e rastreabilidade do desenvolvimento.
 
-### 4.1. Estrutura do Repositório e Documentação
-* **Estrutura de Pastas:** A organização dos diretórios (`src`, `config`, `frontend`, etc.) segue as convenções padrão do Spring Boot/Next.js? A separação de Backend e Frontend é clara e lógica?
-* **Documentação Essencial:** O arquivo `README.md` é completo e útil? Verifique se ele contém:
-    * **Descrição** do projeto e suas funcionalidades.
-    * **Requisitos** de ambiente (Java, Node, versões específicas, etc.).
-    * **Instruções claras de inicialização** (incluindo banco de dados e comandos de *build*).
 
-### 4.2. Gerenciamento de Tarefas (Issues)
-* **Uso de Issues:** O grupo utilizou o sistema de Issues para:
-    * Rastrear bugs, funcionalidades e tarefas?
-    * Gerenciar o backlog e priorizar o trabalho (com *labels* ou *milestones*)?
-    * A descrição das Issues é suficientemente detalhada para guiar o desenvolvimento?
 
-### 4.3. Fluxo de Trabalho (Pull Requests e Branches)
-* **Branches:** O fluxo de *branching* é claro (e.g., usa *main/master*, *develop* e *feature branches*)?
-* **Pull Requests (PRs):** Qual a qualidade e o uso dos Pull Requests?
-    * Possuem **descrições** detalhadas e explicam o propósito das mudanças?
-    * Estão **vinculados** às Issues correspondentes?
-    * Foram usados para **Revisão de Código (Code Review)** antes do *merge*?
+## 4.1 Estrutura do Repositório e Documentação
 
-### 4.4. Padrões de Commits e Versionamento
-* **Padrão de Commits:** Existe um padrão de mensagens de commit (e.g., usando prefixos como `feat:`, `fix:`, `refactor:`)?
-    > **Sugestão:** Se não houver, mencione que a adoção de [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) melhoraria drasticamente a rastreabilidade e a geração automática de *changelogs*.
-* **Versionamento (Releases/Tags):** O projeto utiliza **Tags** ou **Releases** para marcar versões estáveis ou marcos importantes (e.g., `v1.0.0`)?
+
+
+### 📁 Estrutura de Pastas
+
+A organização do repositório segue as **convenções padrão de projetos Spring Boot**, apresentando uma separação clara entre código-fonte, arquivos de configuração e artefatos de build.
+
+Estrutura observada:
+
+```text
+src/
+ └── main/
+     ├── java/
+     ├── resources/
+target/
+pom.xml
+```
+
+
+## 4.2 Gerenciamento de Tarefas (Issues)
+
+### 📝 Uso de Issues
+
+O repositório **não utiliza o sistema de Issues do GitHub** para o gerenciamento das atividades do projeto. Não foram identificados registros formais de:
+
+- Bugs
+- Funcionalidades
+- Tarefas de desenvolvimento
+- Priorização do backlog
+
+**Impacto:**  
+A ausência do uso de Issues dificulta a rastreabilidade do processo de desenvolvimento, bem como o acompanhamento da evolução do projeto e das decisões tomadas ao longo do tempo.
+
+**Recomendação:**  
+A adoção do sistema de Issues permitiria:
+- Organizar e priorizar tarefas;
+- Documentar bugs e melhorias;
+- Relacionar atividades a Pull Requests;
+- Melhorar a comunicação e a colaboração entre os integrantes do grupo.
+
+---
+
+## 4.3 Fluxo de Trabalho (Branches e Pull Requests)
+
+### 🌿 Branches
+
+O projeto aparenta utilizar apenas a branch principal (`main`), não sendo identificado um fluxo de ramificação estruturado.
+
+**Avaliação:**  
+Embora funcional para projetos simples, a utilização de uma única branch reduz o controle sobre mudanças e pode dificultar o desenvolvimento colaborativo.
+
+**Sugestão de melhoria:**  
+Adotar um fluxo mínimo de branches, como:
+- `main`: versão estável do sistema
+- `feature/nome-da-funcionalidade`: desenvolvimento de novas funcionalidades
+- `fix/descricao-do-problema`: correções de erros
+
+Esse modelo contribui para maior organização, segurança e clareza no processo de desenvolvimento.
+
+---
+
+### 🔀 Pull Requests
+
+O uso de Pull Requests é **limitado**, com poucos registros disponíveis no repositório.
+
+Não há evidências claras de:
+- Revisões de código (*code review*);
+- Vinculação entre Pull Requests e Issues;
+- Descrições detalhadas explicando o propósito das alterações.
+
+**Recomendação:**  
+Utilizar Pull Requests como prática obrigatória antes da integração de código à branch principal, incluindo:
+- Descrições claras das mudanças realizadas;
+- Referência às Issues correspondentes;
+- Revisão do código por outros integrantes da equipe.
+
+---
+
+## 4.4 Padrões de Commits e Versionamento
+
+### 🧾 Padrão de Commits
+
+Não foi identificado um padrão formal para as mensagens de commit utilizadas no projeto.
+
+**Impacto:**  
+A ausência de padronização dificulta a compreensão do histórico de alterações e a identificação do tipo de modificação realizada em cada commit.
+
+**Sugestão:**  
+A adoção do padrão **Conventional Commits** (por exemplo: `feat:`, `fix:`, `refactor:`) melhoraria significativamente:
+- A rastreabilidade das mudanças;
+- A organização do histórico de commits;
+- A futura geração automática de *changelogs*.
+
+---
+
+### 🏷️ Versionamento (Releases e Tags)
+
+O projeto **não utiliza tags ou releases** para marcar versões estáveis ou marcos importantes do desenvolvimento.
+
+**Recomendação:**  
+Utilizar versionamento semântico, com tags como:
+- `v1.0.0` – primeira versão estável
+- `v1.1.0` – novas funcionalidades
+- `v1.1.1` – correções de bugs
+
+Essa prática facilita o controle de versões, a manutenção do sistema e a identificação de entregas relevantes.
+
+---
+
 
 ---
 
