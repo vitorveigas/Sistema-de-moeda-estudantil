@@ -11,8 +11,8 @@
 
 ## 📌 2. Identificação do Projeto
 - **Nome do projeto:** _Informe aqui_
-- **Integrantes do outro grupo:** _Nomes_  
-- **Link do repositório:** _https://github.com/exemplo/projeto_  
+- **Integrantes do outro grupo:** Enzo Cazaes, João Vitor Filardi, Rafael Faria
+- **Link do repositório:** https://github.com/RafaelFFranco/Sistema-Moeda-Estudantil
 - **Pull requests submetidos pelo seu grupo:**
   
   | 👤 Integrante | 🔧 Refatoração | 🔗 Link do PR |
