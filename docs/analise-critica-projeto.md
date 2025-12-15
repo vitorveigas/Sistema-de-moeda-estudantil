@@ -277,25 +277,67 @@ Essa prática facilita o controle de versões, a manutenção do sistema e a ide
 ## 🔎 6. Análise de Qualidade do Código e Testes
 
 ### 6.1. Design e Princípios SOLID
-* **Coesão e Acoplamento:** Existem classes com muitas responsabilidades (**God Class**)? O acoplamento entre módulos é alto?
-* **Princípios SOLID Violados (Se aplicável):** (Ex: O Controller faz validação e acesso ao banco, violando o **S**ingle Responsibility Principle - SRP).
-* **Code Smells:** Identifique a presença de **Long Method** (métodos com muitas linhas) ou **Duplicated Code** fora das áreas que vocês refatoraram.
-    * **Evidência/Exemplo:** _(Cite o arquivo e a linha onde um problema foi encontrado)_
+Coesão e Acoplamento
+A estrutura geral do backend segue uma separação por camadas (controller/service/repository/model), o que é positivo. Entretanto, há sinais de acoplamento elevado entre Controller e persistência, pois alguns controllers acessam repositórios diretamente, o que reduz a coesão das camadas e enfraquece a separação de responsabilidades.
+
+Princípios SOLID violados (quando aplicável)
+
+SRP (Single Responsibility Principle): há controllers que acumulam responsabilidades de orquestração de fluxo, regras de negócio, e acesso a dados, em vez de delegar isso integralmente à camada Service.
+
+Exemplo: no MoedaController, o controller consulta transações diretamente via TransacaoRepository, além de decidir regras de fallback em caso de erro (misturando UI/fluxo com decisões de dados).
+
+Em menor grau, isso também afeta a testabilidade (vide seção 6.2), pois regras ficam espalhadas e mais difíceis de isolar.
+
+Code Smells
+
+Long Method: o método trocar(...) no MoedaController concentra várias operações (validações, busca de dados, atualização de saldo/estado, registro de transação e envio de e-mail), caracterizando um método longo e com múltiplas responsabilidades, o que dificulta manutenção e testes.
+
+Tratamento genérico de exceções: há blocos try/catch (Exception e) em fluxo de controller, com fallback para consultas alternativas, o que pode mascarar falhas reais e criar comportamentos inesperados.
+
+Evidência/Exemplo
+
+Acesso direto ao repositório dentro do controller: src/main/java/br/edu/moedaestudantil/controller/MoedaController.java (linhas 73–97, uso de transacaoRepository.find...).
+
+Método longo concentrando múltiplas responsabilidades: src/main/java/br/edu/moedaestudantil/controller/MoedaController.java (linhas 142–208, método trocar(...)).
+
+Outro exemplo de controller acessando repositório: src/main/java/br/edu/moedaestudantil/controller/AlunoController.java (linha 90, uso de transacaoRepository...).
 
 ### 6.2. Testabilidade e Cobertura
-* **Presença de Testes:** O projeto possui testes (Unitários, Integração, End-to-End)?
-* **Cobertura (Estimada/Medida):** Qual é a cobertura de código (Se houver ferramenta para medir, cite o percentual)?
-    * **Qualidade dos Testes:** Os testes focam na lógica de negócio (camada Service) ou apenas na integração do sistema (testando o Controller e persistência)?
-    * **Mocking:** O uso de *mocks* e *stubs* é adequado para isolar as dependências e testar unidades de código?
-    * **Evidência/Exemplo:** _(Cite o diretório de testes (`src/test`) e mencione a ausência ou presença de testes para uma funcionalidade crítica)_
+Presença de testes
+Não foi identificado diretório de testes (src/test) no projeto. Portanto, não há evidências de testes unitários, de integração ou end-to-end.
+
+Cobertura (estimada/medida)
+Como não há testes e não foi identificada ferramenta de cobertura configurada (ex.: JaCoCo), a cobertura não pode ser medida e, na prática, é tendencialmente nula do ponto de vista de execução automatizada.
+
+Qualidade dos testes
+Não aplicável, pois não há testes. Em termos de risco, isso é relevante porque as regras de negócio centrais (ex.: transferência, troca de vantagem, registro de transações) ficam dependentes apenas de validação manual.
+
+Mocking
+Não aplicável, pois não existem testes automatizados. Em um cenário recomendado, a camada service deveria ser testada com mocks de repositories para isolar dependências e validar regras de negócio sem necessidade de banco real.
+
+Evidência/Exemplo
+
+Ausência de testes: não existe o diretório src/test na estrutura do projeto (indicando ausência de suíte de testes para funcionalidades críticas).
 
 ### 6.3. Segurança e Tratamento de Erros (OWASP Top 10)
-Avalie o projeto com base em vulnerabilidades comuns, como as citadas no OWASP Top 10. 
+Validação de entrada (Input Validation)
+Há uso pontual de validação via Bean Validation (@Valid, @NotBlank, @Email), porém a validação é parcial e não cobre adequadamente campos sensíveis (ex.: padrões de CPF, limites de tamanho, validações de formato e consistência). Além disso, como várias telas recebem entrada via formulários, a ausência de regras mais rigorosas pode permitir entradas inconsistentes.
+Quanto a SQL Injection, o uso de Spring Data JPA tende a reduzir esse risco por padrão. Já para XSS, não há evidência clara de sanitização explícita; em aplicações com templates, é importante garantir que não haja renderização não-escapada de conteúdo vindo do usuário.
 
-* **Validação de Entrada (Input Validation):** Existem validações rigorosas em todos os dados recebidos (DTOs)? Há sanitização de *input* para prevenir **Injeção de SQL/Scripting (XSS)**?
-* **Tratamento de Credenciais:** O tratamento de senhas é seguro (uso de `BCrypt` ou algoritmo forte)? As credenciais de acesso ao banco estão expostas no código ou em *logs*?
-* **Tratamento de Exceções:** O tratamento de exceções é adequado? A aplicação retorna mensagens de erro genéricas (status 500) ou expõe detalhes do erro e da arquitetura (vazamento de informações)?
-    * **Evidência/Exemplo:** _(Cite um ponto fraco, Ex: "O campo de busca não tem sanitização, potencial XSS" ou "As senhas não estão criptografadas")_
+Tratamento de credenciais
+Foram identificadas credenciais sensíveis expostas no arquivo de configuração, incluindo senha do banco e senha de e-mail, o que é um ponto crítico de segurança (risco de vazamento e comprometimento de ambiente). Além disso, o encoder de senha implementa um modo compatível com senhas em texto puro (para migração), o que aumenta o risco caso existam usuários persistidos sem hash.
+Também está habilitado spring.jpa.show-sql=true, o que pode aumentar risco de exposição de informações em logs.
+
+Tratamento de exceções
+Não foi identificado um tratamento centralizado de exceções com retorno controlado (por exemplo, via @ControllerAdvice com @ExceptionHandler). Há indícios de tratamento genérico em controllers (captura ampla de Exception) e comportamento de fallback, o que pode ocultar falhas e dificultar diagnóstico. Em termos de segurança, respostas e logs devem evitar exposição de detalhes internos.
+
+Evidência/Exemplo
+
+Credenciais expostas: src/main/resources/application.properties (linha 4: spring.datasource.password=...; linha 17: spring.mail.password=...).
+
+CSRF desabilitado e console H2 liberado: src/main/java/br/edu/moedaestudantil/config/SecurityConfig.java (linha 26: csrf.disable(); linha 33: liberação de /h2-console/**).
+
+Suporte a senha em texto puro (compatibilidade/migração): src/main/java/br/edu/moedaestudantil/config/MigratingPasswordEncoder.java (trecho do método matches, onde compara diretamente quando não é BCrypt).
 
 ---
 
