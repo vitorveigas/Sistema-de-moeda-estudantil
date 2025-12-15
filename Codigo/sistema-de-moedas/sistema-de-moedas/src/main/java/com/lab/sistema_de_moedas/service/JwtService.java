@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,15 +16,28 @@ import java.util.function.Function;
 
 @Service
 public class JwtService {
-
-    @Value("${jwt.secret:mySecretKey123456789012345678901234567890}")
+    
+    @Value("${jwt.secret}")
     private String secret;
 
     @Value("${jwt.expiration:86400000}")
-    private Long expiration;
+    private long expirationMs;
+
+    private static final SignatureAlgorithm SIGN_ALG = SignatureAlgorithm.HS256;
 
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes());
+        validateSecret(secret);
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private void validateSecret(String secret) {
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException("JWT secret não configurado (jwt.secret)");
+        }
+
+        if (secret.getBytes(StandardCharsets.UTF_8).length < 32) {
+            throw new IllegalStateException("JWT secret muito curto. Use pelo menos 32 bytes.");
+        }
     }
 
     public String extractUsername(String token) {
@@ -47,27 +61,34 @@ public class JwtService {
                 .getBody();
     }
 
-    private Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+    private boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(now());
+    }
+
+    private Date now() {
+        return new Date();
     }
 
     public String generateToken(String username) {
-        Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, username);
+        return createToken(new HashMap<>(), username);
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
+        final long nowMs = System.currentTimeMillis();
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .setIssuedAt(new Date(nowMs))
+                .setExpiration(new Date(nowMs + expirationMs))
+                .signWith(getSigningKey(), SIGN_ALG)
                 .compact();
     }
 
-    public Boolean validateToken(String token, String username) {
+    public boolean validateToken(String token, String username) {
+        if (token == null || token.isBlank() || username == null || username.isBlank()) {
+            return false;
+        }
         final String extractedUsername = extractUsername(token);
-        return (extractedUsername.equals(username) && !isTokenExpired(token));
+        return username.equals(extractedUsername) && !isTokenExpired(token);
     }
 }
