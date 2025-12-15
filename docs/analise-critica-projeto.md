@@ -562,7 +562,7 @@ public class PasswordManagementUtils {
 ### 3️⃣ Refatoração 3 – Melhoria de Nomes (Rename)
 
 **Arquivo:** `src/main/java/com/example/controller/ProductController.java`  
-**Pull Request:** https://github.com/exemplo/projeto/pull/3  
+**Pull Request:** https://github.com/RafaelFFranco/Sistema-Moeda-Estudantil/pull/2
 
  *Arquivo e localização:* `EmpresaService.java` (método `update`)
 
