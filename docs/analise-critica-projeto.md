@@ -564,7 +564,7 @@ public class PasswordManagementUtils {
 **Arquivo:** `src/main/java/com/example/controller/ProductController.java`  
 **Pull Request:** https://github.com/exemplo/projeto/pull/3  
 
-melhorias de nome *Arquivo e localização:* EmpresaService.java (método update)
+ *Arquivo e localização:* `EmpresaService.java` (método `update`)
 
 #### 🔴 Antes
 
@@ -588,8 +588,11 @@ public EmpresaParceira update(EmpresaParceira dados) {
     }
 
     return empresa;
-} 
----
+}
+```
+
+
+
 #### 🟢 Depois
 ```java
 @Transactional
@@ -612,6 +615,7 @@ public EmpresaParceira update(EmpresaParceira data) {
 
     return company;
 }
+```
 ✔ Tipo de refatoração aplicada: Rename Parameter e Rename Variable
 
 📝 Justificativa técnica: Nomes genéricos (dados, empresa) reduzem clareza. Renomear para descritivos (data, company) em inglês melhora legibilidade e evita confusões em métodos complexos.
