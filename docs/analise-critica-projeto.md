@@ -91,8 +91,7 @@ Principais características:
 - Alternativamente, parte das páginas podem ser servidas diretamente via Thymeleaf.  
 - Essa dualidade permite ao projeto combinar **renderização server-side clássica** (Thymeleaf) e **componentização moderna** (Next.js).
 
-> [!TIP]
-> Destaque se o uso combinado de Thymeleaf e Next.js trouxe benefícios (flexibilidade, compatibilidade) ou dificuldades (duplicidade de camadas de view, esforço maior de manutenção).
+> A combinação de Thymeleaf e Next.js no projeto oferece flexibilidade, permitindo que a renderização server-side e a componentização moderna coexistam. Enquanto o Thymeleaf facilita a criação de interfaces simples e rápidas no backend, o Next.js melhora a interatividade e o SEO com renderização híbrida. No entanto, essa dualidade pode gerar duplicidade de camadas de view, aumentando a complexidade e o esforço de manutenção. Para otimizar o projeto, seria ideal consolidar a camada de visualização em uma única abordagem no futuro.
 
 ---
 
