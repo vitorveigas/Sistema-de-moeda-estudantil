@@ -338,8 +338,6 @@ Não foi identificado um tratamento centralizado de exceções, como o uso de `@
 
 ## 🚀 7. Sugestões de Melhorias
 
-Liste **entre 5 e 7 sugestões claras e prioritárias** para os autores do projeto, baseadas nas análises acima (Seções 3, 4, 5 e 6).
-
 1. **Implementação de Testes Automatizados:** O projeto não possui testes (não há diretório src/test), o que viola princípios de testabilidade. Adicione testes unitários para serviços (ex.: AlunoService, MoedaService) usando JUnit e Mockito, visando cobertura mínima de 70%. Inclua testes de integração com @SpringBootTest para controladores e repositórios, priorizando funcionalidades críticas como transferência de moedas e autenticação.
 
 2. **Reforço da Segurança e Tratamento de Erros:** Credenciais de banco e e-mail estão expostas no application.properties (ex.: senha do PostgreSQL visível), representando risco de OWASP Top 10 (exposição de credenciais). Migre para variáveis de ambiente ou arquivos não versionados. Habilite CSRF no SecurityConfig.java, adicione validações rigorosas em DTOs com @Valid e Bean Validation, e implemente tratamento centralizado de erros com @ControllerAdvice para evitar vazamento de informações (ex.: status 500 genérico em vez de stack traces).
