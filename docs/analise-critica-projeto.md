@@ -564,22 +564,57 @@ public class PasswordManagementUtils {
 **Arquivo:** `src/main/java/com/example/controller/ProductController.java`  
 **Pull Request:** https://github.com/exemplo/projeto/pull/3  
 
-#### 🔴 Antes
-```java
-@PostMapping("/x")
-public void x(@RequestBody Product p) {
-    if (p == null) return;
-    service.save(p);
-}
-```
+melhorias de nome *Arquivo e localização:* EmpresaService.java (método update)
 
+#### 🔴 Antes
+
+```java
+@Transactional
+public EmpresaParceira update(EmpresaParceira dados) {
+    EmpresaParceira empresa = empresaRepository.findById(dados.getId())
+        .orElseThrow(() -> new IllegalArgumentException("Empresa não encontrada com ID: " + dados.getId()));
+
+    empresa.setNome(dados.getNome());
+    empresa.setEmail(dados.getEmail());
+    empresa.setLogin(dados.getLogin());
+    
+    // Gerenciar senha: se não foi informada, mantém a atual; se foi informada, criptografa
+    if (dados.getSenha() == null || dados.getSenha().isEmpty()) {
+        // Mantém a senha atual
+    } else if (!isPasswordEncrypted(dados.getSenha())) {
+        empresa.setSenha(passwordEncoder.encode(dados.getSenha()));
+    } else {
+        empresa.setSenha(dados.getSenha());
+    }
+
+    return empresa;
+} 
+---
 #### 🟢 Depois
 ```java
-@PostMapping("/save")
-public void saveProduct(@RequestBody Product product) {
-    if (product == null) return;
-    service.save(product);
+@Transactional
+public EmpresaParceira update(EmpresaParceira data) {
+    EmpresaParceira company = empresaRepository.findById(data.getId())
+        .orElseThrow(() -> new IllegalArgumentException("Empresa não encontrada com ID: " + data.getId()));
+
+    company.setNome(data.getNome());
+    company.setEmail(data.getEmail());
+    company.setLogin(data.getLogin());
+    
+    // Gerenciar senha: se não foi informada, mantém a atual; se foi informada, criptografa
+    if (data.getSenha() == null || data.getSenha().isEmpty()) {
+        // Mantém a senha atual
+    } else if (!isPasswordEncrypted(data.getSenha())) {
+        company.setSenha(passwordEncoder.encode(data.getSenha()));
+    } else {
+        company.setSenha(data.getSenha());
+    }
+
+    return company;
 }
+✔ Tipo de refatoração aplicada: Rename Parameter e Rename Variable
+
+📝 Justificativa técnica: Nomes genéricos (dados, empresa) reduzem clareza. Renomear para descritivos (data, company) em inglês melhora legibilidade e evita confusões em métodos complexos.
 ```
 
 #### ✔ Tipo de refatoração aplicada
